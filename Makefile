@@ -1,6 +1,11 @@
+# 目录设置
+SrcDir = ./src
+BuildDir = ./build
 # 中间文件
-Objects =  	MainRun.o \
-			ODSLib.o
+Objects =  	$(BuildDir)/MainRun.o \
+			$(BuildDir)/ODSLib.o
+# 目标文件
+Target = bin/runner.exe
 # 编译器设置
 CC = g++
 # 编译选项设置
@@ -10,19 +15,18 @@ Release = -O3
 # OpenMP并行设置
 OpenMP = -fopenmp
 # 包含头文件目录
-Include = -I .\
-	  -I Eigen
+Include = -I ./include
 # 连接产生目标文件
-Test : $(Objects)
-	$(CC) -o Test.exe $(Objects) $(OpenMP)
+$(Target) : $(Objects)
+	$(CC) -o $(Target) $(Objects)
 # 各源文件编译
-MainRun.o : MainRun.cpp
-	$(CC) -c MainRun.cpp $(Include) $(Compiler)
-ODSLib.o : ODSLib.cpp
-	$(CC) -c ODSLib.cpp $(Include) $(Compiler)
+$(BuildDir)/MainRun.o : $(SrcDir)/MainRun.cpp
+	$(CC) -c $(SrcDir)/MainRun.cpp -o $(BuildDir)/MainRun.o $(Include) $(Compiler)
+$(BuildDir)/ODSLib.o : $(SrcDir)/ODSLib.cpp
+	$(CC) -c $(SrcDir)/ODSLib.cpp -o $(BuildDir)/ODSLib.o $(Include) $(Compiler)
 # 清除中间文件
 clean : 
-	rm  $(Objects) Test.exe
+	rm  $(Objects) $(Target)
 rebuild :
 	make clean
 	make
