@@ -5,7 +5,7 @@ BuildDir = ./build
 Objects =  	$(BuildDir)/MainRun.o \
 			$(BuildDir)/ODSLib.o
 # 目标文件
-Target = bin/runner.exe
+Target = bin/runner
 # 编译器设置
 CC = g++
 # 编译选项设置
