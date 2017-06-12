@@ -1,22 +1,27 @@
-// Orbit Dynamics and Safety Library
-// 孙振江，2016.12.20
-/////////////////////////////////////////////////////////////
+/// \file ODS.h
+/// Orbit Dynamics and Safety Library
+/// 
+/// \author Sun, Zhenjiang
+/// \date 2016.Dec.20
 
 #pragma once
+
 #include <cstdlib>
 #include <cmath>
 #include <Eigen/Dense>
 #include <vector>
 #include <iostream>
-#include "ODSConstant.h"
-#include "ODSRightFun.h"
+#include "ODSLib/ODSConstant.h"
+#include "ODSLib/ODSRightFun.h"
 
 using namespace Eigen;
 
 namespace ODS
 {
+template <typename T>
+T cons(const T x);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // 坐标变换相关函数
 
 //********************************************************************

@@ -14,6 +14,7 @@
 *.lo
 *.o
 *.obj
+runner
 
 # Precompiled Headers
 *.gch
