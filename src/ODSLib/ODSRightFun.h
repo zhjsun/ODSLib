@@ -1,15 +1,15 @@
-// Orbit Dynamics and Safety Library
-// 右函数类头文件
-// 孙振江，2017.01.19
-/////////////////////////////////////////////////////////////
+/// \file ODSConstant.h
+/// This file contains the base right function classes
+/// 
+/// \author Sun, Zhenjiang
+/// \date 2017.Jan.19
 
 #pragma once
 #include <Eigen/Dense>
 
-using namespace Eigen;
-
-namespace ODS
-{
+/// All the functions are in the namespace ODS
+/// 
+namespace ODS {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -27,7 +27,7 @@ class CRightFun
     /// @Param	x		初始函数值
     /// @Output
     /// @Param	result	计算得到的函数值
-    virtual void operator()(double t, const Matrix<T, Dynamic, 1> &x, Matrix<T, Dynamic, 1> &result) const = 0;
+    virtual void operator()(double t, const Eigen::Matrix<T, Eigen::Dynamic, 1> &x, Eigen::Matrix<T, Eigen::Dynamic, 1> &result) const = 0;
 };
 
 //

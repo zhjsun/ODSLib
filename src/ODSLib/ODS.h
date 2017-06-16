@@ -1,5 +1,5 @@
 /// \file ODS.h
-/// Orbit Dynamics and Safety Library
+/// This file contains some basic algorithms for Orbit Dynamics and Safety
 /// 
 /// \author Sun, Zhenjiang
 /// \date 2016.Dec.20
@@ -14,12 +14,9 @@
 #include "ODSLib/ODSConstant.h"
 #include "ODSLib/ODSRightFun.h"
 
-using namespace Eigen;
-
-namespace ODS
-{
-template <typename T>
-T cons(const T x);
+/// All the functions are in the namespace ODS
+/// 
+namespace ODS {
 
 ////////////////////////////////////////////////////////////////////////////////
 // 坐标变换相关函数
@@ -36,7 +33,7 @@ T cons(const T x);
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
 template <typename T>
-bool RotationAxis(const int axis, const T alpha, Matrix<T, 3, 3> &Mtx)
+bool RotationAxis(const int axis, const T alpha, Eigen::Matrix<T, 3, 3> &Mtx)
 {
     assert(axis >= 1 && axis <= 3);
     switch (axis)
@@ -68,7 +65,7 @@ bool RotationAxis(const int axis, const T alpha, Matrix<T, 3, 3> &Mtx)
 /// @Param	mtx		VVLH到ICS的转移矩阵
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
-bool VVLHToICSMtx(const Vector3d &pos, const Vector3d &vel, Matrix3d &mtx);
+bool VVLHToICSMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
 
 //********************************************************************
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
@@ -83,7 +80,7 @@ bool VVLHToICSMtx(const Vector3d &pos, const Vector3d &vel, Matrix3d &mtx);
 /// @Param	mtx		ICS到VVLH的转移矩阵
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
-bool ICSToVVLHMtx(const Vector3d &pos, const Vector3d &vel, Matrix3d &mtx);
+bool ICSToVVLHMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
 
 //********************************************************************
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
@@ -98,7 +95,7 @@ bool ICSToVVLHMtx(const Vector3d &pos, const Vector3d &vel, Matrix3d &mtx);
 /// @Param	mtx		ICS到VVLH的转移矩阵
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
-bool ICSToVVLH(const VectorXd &Target, const VectorXd &Chaser, VectorXd &RelState);
+bool ICSToVVLH(const Eigen::VectorXd &Target, const Eigen::VectorXd &Chaser, Eigen::VectorXd &RelState);
 
 //********************************************************************
 /// 计算从直角坐标到轨道根数
@@ -113,16 +110,16 @@ bool ICSToVVLH(const VectorXd &Target, const VectorXd &Chaser, VectorXd &RelStat
 //bool Cart2Elem(const VectorXd & cart, Array<double, Dynamic, 1> & elem);
 //bool Cart2Elem(const Matrix<DA, Dynamic, 1> & cart, Array<DA, Dynamic, 1> & elem);
 template <typename T>
-bool Cart2Elem(const Matrix<T, Dynamic, 1> &cart, Array<T, Dynamic, 1> &elem)
+bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> &cart, Eigen::Array<T, Eigen::Dynamic, 1> &elem)
 {
     double GM_km = GM * 1e-9;
 
-    Matrix<T, 3, 1> RVec, VVec; // 距离和速度矢量
+    Eigen::Matrix<T, 3, 1> RVec, VVec; // 距离和速度矢量
     RVec = cart.head(3) / 1000; // km
     VVec = cart.tail(3) / 1000; // km/s
     T rr = RVec.norm();         // 地心距, km
     // 计算动量矩
-    Matrix<T, 3, 1> HVec;
+    Eigen::Matrix<T, 3, 1> HVec;
     HVec = RVec.cross(VVec);
     T hh = HVec.norm();
     // 计算轨道倾角
@@ -138,7 +135,7 @@ bool Cart2Elem(const Matrix<T, Dynamic, 1> &cart, Array<T, Dynamic, 1> &elem)
         RAAN += 2 * Pi;
     }
     // 计算偏心率矢量和大小
-    Matrix<T, 3, 1> EVec;
+    Eigen::Matrix<T, 3, 1> EVec;
     EVec = VVec.cross(HVec) / GM_km - RVec / rr;
     T Ecc = EVec.norm();
     // 计算近地点纬度幅角
@@ -194,7 +191,7 @@ bool Cart2Elem(const Matrix<T, Dynamic, 1> &cart, Array<T, Dynamic, 1> &elem)
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
 template <typename T>
-bool Elem2Cart(const Array<T, Dynamic, 1> &elem, Matrix<T, Dynamic, 1> &cart)
+bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> &elem, Eigen::Matrix<T, Eigen::Dynamic, 1> &cart)
 {
     T SemiA = elem(0);
     T Ecc = elem(1);
@@ -207,12 +204,12 @@ bool Elem2Cart(const Array<T, Dynamic, 1> &elem, Matrix<T, Dynamic, 1> &cart)
     T h = sqrt(p * GM);
     T r = p / (1 + Ecc * cos(TrueA));
 
-    Matrix<T, 3, 3> M3NR, M1NI, M3Nw, M3NwPi2;
+    Eigen::Matrix<T, 3, 3> M3NR, M1NI, M3Nw, M3NwPi2;
     RotationAxis(3, -RAAN, M3NR);
     RotationAxis(1, -Inc, M1NI);
     RotationAxis(3, -w, M3Nw);
     RotationAxis(3, -w - Pi / 2, M3NwPi2);
-    Matrix<T, 3, 1> RInPlane, UnitVec, ii0, jj0;
+    Eigen::Matrix<T, 3, 1> RInPlane, UnitVec, ii0, jj0;
     RInPlane << r * cos(TrueA), r * sin(TrueA), 0;
     UnitVec << 1, 0, 0;
     ii0 = M3NR * M1NI * M3Nw * UnitVec;
@@ -321,7 +318,7 @@ double DistancePointEllipsoid(double e0, double e1, double e2, double y0, double
 /// @return	true			计算成功
 /// 		false			点不在椭球外部
 //********************************************************************
-bool DistancePointEllipsoid(const Vector3d &pointPos, double ellipAx1, double ellipAx2, double ellipAx3, Vector3d &distanceVec, Vector3d &posAtEllip);
+bool DistancePointEllipsoid(const Eigen::Vector3d &pointPos, double ellipAx1, double ellipAx2, double ellipAx3, Eigen::Vector3d &distanceVec, Eigen::Vector3d &posAtEllip);
 
 //********************************************************************
 /// 计算椭球和椭球之间的最近距离
@@ -344,7 +341,7 @@ bool DistancePointEllipsoid(const Vector3d &pointPos, double ellipAx1, double el
 ///			false				椭球接触或相交，或者没有在规定次数内收敛
 //********************************************************************
 bool DistanceEllipsoid(double ellipAx11, double ellipAx12, double ellipAx13, double ellipAx21, double ellipAx22, double ellipAx23,
-                       const MatrixXd &mtx1To2, const Vector3d &ellip2AtEllip1Pos, Vector3d &distanceVec12, Vector3d &posAtEllip1, Vector3d &posAtEllip2);
+                       const Eigen::MatrixXd &mtx1To2, const Eigen::Vector3d &ellip2AtEllip1Pos, Eigen::Vector3d &distanceVec12, Eigen::Vector3d &posAtEllip1, Eigen::Vector3d &posAtEllip2);
 
 //********************************************************************
 /// 对特征值和特征向量按照降序排列
@@ -357,7 +354,7 @@ bool DistanceEllipsoid(double ellipAx11, double ellipAx12, double ellipAx13, dou
 /// @Output
 /// @Return
 //********************************************************************
-void EigenDesSort(VectorXd &eigenvalue, MatrixXd &eigenvector);
+void EigenDesSort(Eigen::VectorXd &eigenvalue, Eigen::MatrixXd &eigenvector);
 
 //********************************************************************
 /// ODE积分一步，变步长四阶龙格库塔
@@ -374,12 +371,12 @@ void EigenDesSort(VectorXd &eigenvalue, MatrixXd &eigenvector);
 /// @Return
 //********************************************************************
 template <typename T>
-void RK4Step(const CRightFun<T> &f, double t, double h, double eps, Matrix<T, Dynamic, 1> &y)
+void RK4Step(const CRightFun<T> &f, double t, double h, double eps, Eigen::Matrix<T, Eigen::Dynamic, 1> &y)
 {
     int n = y.size();
     int m, i, j, k;
     double hh, p, dt, x, tt, q, a[4];
-    Matrix<T, Dynamic, 1> g, b, c, d, e;
+    Eigen::Matrix<T, Eigen::Dynamic, 1> g, b, c, d, e;
     g.resize(n);
     b.resize(n);
     c.resize(n);
@@ -441,7 +438,7 @@ void RK4Step(const CRightFun<T> &f, double t, double h, double eps, Matrix<T, Dy
 /// @Output
 /// @Return
 //********************************************************************
-void RK78(const CRightFun<double> &f, double T0, double T1, VectorXd &X);
+void RK78(const CRightFun<double> &f, double T0, double T1, Eigen::VectorXd &X);
 
 //********************************************************************
 /// 勒让德-高斯(Legendre-Gauss)数值积分函数

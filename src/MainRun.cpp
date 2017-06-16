@@ -5,7 +5,7 @@ using namespace std;
 using namespace Eigen;
 using namespace ODS;
 
-int main() {
+int main( void ) {
 
     VectorXd state(6);
     ArrayXd Elem(6);

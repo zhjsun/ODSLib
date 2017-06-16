@@ -1,6 +1,7 @@
 #include "ODSLib/ODSLib.h"
 
 using namespace std;
+using namespace Eigen;
 
 // 坐标变换相关函数
 //********************************************************************
