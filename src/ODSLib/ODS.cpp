@@ -17,25 +17,25 @@ using namespace Eigen;
 /// @Param	mtx		VVLH到ICS的转移矩阵
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
-bool ODS::VVLHToICSMtx(const Vector3d& pos, const Vector3d& vel, Matrix3d& mtx)
-{
-    double r, s, n;
-    Vector3d ss, nn;
-    r = pos.norm();
-    nn = pos.cross(vel);
-    n = nn.norm();
-    ss = pos.cross(nn);
-    s = ss.norm();
-
-    Matrix3d mtxTmp;
-    mtxTmp.row(0) = -ss / s;
-    mtxTmp.row(1) = -nn / n;
-    mtxTmp.row(2) = -pos / r;
-
-    mtx = mtxTmp.inverse();
-
-    return true;
-}
+// bool ODS::VVLHToICSMtx(const Vector3d& pos, const Vector3d& vel, Matrix3d& mtx)
+// {
+//     double r, s, n;
+//     Vector3d ss, nn;
+//     r = pos.norm();
+//     nn = pos.cross(vel);
+//     n = nn.norm();
+//     ss = pos.cross(nn);
+//     s = ss.norm();
+// 
+//     Matrix3d mtxTmp;
+//     mtxTmp.row(0) = -ss / s;
+//     mtxTmp.row(1) = -nn / n;
+//     mtxTmp.row(2) = -pos / r;
+// 
+//     mtx = mtxTmp.inverse();
+// 
+//     return true;
+// }
 
 //********************************************************************
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
@@ -50,22 +50,22 @@ bool ODS::VVLHToICSMtx(const Vector3d& pos, const Vector3d& vel, Matrix3d& mtx)
 /// @Param	mtx		ICS到VVLH的转移矩阵
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
-bool ODS::ICSToVVLHMtx(const Vector3d& pos, const Vector3d& vel, Matrix3d& mtx)
-{
-    double r, s, n;
-    Vector3d ss, nn;
-    r = pos.norm();
-    nn = pos.cross(vel);
-    n = nn.norm();
-    ss = pos.cross(nn);
-    s = ss.norm();
-
-    mtx.row(0) = -ss / s;
-    mtx.row(1) = -nn / n;
-    mtx.row(2) = -pos / r;
-
-    return true;
-}
+// bool ODS::ICSToVVLHMtx(const Vector3d& pos, const Vector3d& vel, Matrix3d& mtx)
+// {
+//     double r, s, n;
+//     Vector3d ss, nn;
+//     r = pos.norm();
+//     nn = pos.cross(vel);
+//     n = nn.norm();
+//     ss = pos.cross(nn);
+//     s = ss.norm();
+// 
+//     mtx.row(0) = -ss / s;
+//     mtx.row(1) = -nn / n;
+//     mtx.row(2) = -pos / r;
+// 
+//     return true;
+// }
 
 //********************************************************************
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
@@ -92,7 +92,7 @@ bool ODS::ICSToVVLH(const VectorXd& Target, const VectorXd& Chaser, VectorXd& Re
     RCha = Chaser.head(3);
     VCha = Chaser.tail(3);
 
-    ICSToVVLHMtx(RTar, VTar, Mo);
+    ICS2VVLHMtx(RTar, VTar, Mo);
     w = -Mo.row(1)*VTar.norm() / RTar.norm();
     Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
 

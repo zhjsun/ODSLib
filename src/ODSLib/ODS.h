@@ -19,68 +19,28 @@
 namespace ODS {
 
 ////////////////////////////////////////////////////////////////////////////////
-// 坐标变换相关函数
+/// Coordinate Transformation functions
+/// 坐标变换相关函数
+////////////////////////////////////////////////////////////////////////////////
 
-//********************************************************************
+/// Coordinate rotation matrix
 /// 坐标旋转矩阵
-/// @Author	孙振江
-/// @Date	2016.12.22
-/// @Input
-/// @Param	axis	制定旋转轴[1, 2, 3]
-/// @Param	alpha	旋转角度[rad]
-/// @Output
-/// @Param	Mtx 	旋转矩阵
-/// @Return			true=计算正确; false=输入数据异常
-//********************************************************************
 template <typename T>
-bool RotationAxis(const int axis, const T alpha, Eigen::Matrix<T, 3, 3> &Mtx)
-{
-    assert(axis >= 1 && axis <= 3);
-    switch (axis)
-    {
-    case 1:
-        Mtx << 1, 0, 0, 0, cos(alpha), sin(alpha), 0, -sin(alpha), cos(alpha);
-        break;
-    case 2:
-        Mtx << cos(alpha), 0, -sin(alpha), 0, 1, 0, sin(alpha), 0, cos(alpha);
-        break;
-    default:
-        Mtx << cos(alpha), sin(alpha), 0, -sin(alpha), cos(alpha), 0, 0, 0, 1;
-        break;
-    }
+bool RotationAxis(const int axis, const T alpha, Eigen::Matrix<T, 3, 3> & Mtx);
 
-    return true;
-}
-
-//********************************************************************
+/// Return transformation matrix from VVLH to ICS.
 /// 计算从VVLH坐标系到输入直角坐标系（地心惯性系或地固系）的转换矩阵
-///  VVLH定义为：z轴指向地心，x轴与z轴垂直指向速度方向，y轴与其它两轴成右手坐标系.
-/// Return transformation matrix from VVLH(Vehicle Velocity Local Horizontal) to ICS.
-/// @Author	孙振江
-/// @Date	2016.12.20
-/// @Input
-/// @Param	pos		the position of vehicle 地心惯性系或地固系中的飞行器位置[m]
-/// @Param	vel		velocity of vehicle 地心惯性系或地固系中的飞行器速度[m/s]
-/// @Output
-/// @Param	mtx		VVLH到ICS的转移矩阵
-/// @Return			true=计算正确; false=输入数据异常
-//********************************************************************
-bool VVLHToICSMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
+template <typename T>
+bool VVLH2ICSMtx(const Eigen::Matrix<T, 3, 1> & pos, 
+    const Eigen::Matrix<T, 3, 1> & vel, Eigen::Matrix<T, 3, 3> & mtx);
+// bool VVLHToICSMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
 
-//********************************************************************
+/// \brief Return transformation matrix from ICS to VVLH
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
-/// VVLH定义为：z轴指向地心，x轴与z轴垂直指向速度方向，y轴与其它两轴成右手坐标系.
-/// Return transformation matrix from VVLH(Vehicle Velocity Local Horizontal) to ICS.
-/// @Author	孙振江
-/// @Date	2016.12.20
-/// @Input
-/// @Param	pos		the position of vehicle 地心惯性系或地固系中的飞行器位置[m]
-/// @Param	vel		velocity of vehicle 地心惯性系或地固系中的飞行器速度[m/s]
-/// @Output
-/// @Param	mtx		ICS到VVLH的转移矩阵
-/// @Return			true=计算正确; false=输入数据异常
-//********************************************************************
-bool ICSToVVLHMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
+template <typename T>
+bool ICS2VVLHMtx(const Eigen::Matrix<T, 3, 1> & pos, 
+    const Eigen::Matrix<T, 3, 1> & vel, Eigen::Matrix<T, 3, 3> & mtx);
+// bool ICSToVVLHMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
 
 //********************************************************************
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
