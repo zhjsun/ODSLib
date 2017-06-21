@@ -80,31 +80,31 @@ using namespace Eigen;
 /// @Param	mtx		ICS到VVLH的转移矩阵
 /// @Return			true=计算正确; false=输入数据异常
 //********************************************************************
-bool ODS::ICSToVVLH(const VectorXd& Target, const VectorXd& Chaser, VectorXd& RelState)
-{
-    Matrix3d Mo, Mw;                                        // 坐标变换矩阵
-    Vector3d RTar, VTar, RCha, VCha, RRel, VRel, w;
-    MatrixXd M(6, 6);
-    VectorXd state(6);
-
-    RTar = Target.head(3);
-    VTar = Target.tail(3);
-    RCha = Chaser.head(3);
-    VCha = Chaser.tail(3);
-
-    ICS2VVLHMtx(RTar, VTar, Mo);
-    w = -Mo.row(1)*VTar.norm() / RTar.norm();
-    Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
-
-    M.topLeftCorner(3, 3) = Mo;
-    M.topRightCorner(3, 3).fill(0);
-    M.bottomLeftCorner(3, 3) = -Mo*Mw;
-    M.bottomRightCorner(3, 3) = Mo;
-    state = Chaser - Target;
-    RelState = M*state;
-
-    return true;
-}
+// bool ODS::ICSToVVLH(const VectorXd& Target, const VectorXd& Chaser, VectorXd& RelState)
+// {
+//     Matrix3d Mo, Mw;                                        // 坐标变换矩阵
+//     Vector3d RTar, VTar, RCha, VCha, RRel, VRel, w;
+//     MatrixXd M(6, 6);
+//     VectorXd state(6);
+// 
+//     RTar = Target.head(3);
+//     VTar = Target.tail(3);
+//     RCha = Chaser.head(3);
+//     VCha = Chaser.tail(3);
+// 
+//     ICS2VVLHMtx(RTar, VTar, Mo);
+//     w = -Mo.row(1)*VTar.norm() / RTar.norm();
+//     Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
+// 
+//     M.topLeftCorner(3, 3) = Mo;
+//     M.topRightCorner(3, 3).fill(0);
+//     M.bottomLeftCorner(3, 3) = -Mo*Mw;
+//     M.bottomRightCorner(3, 3) = Mo;
+//     state = Chaser - Target;
+//     RelState = M*state;
+// 
+//     return true;
+// }
 
 //********************************************************************
 /// 计算从惯性系直角坐标到轨道根数
@@ -1042,35 +1042,3 @@ double ODS::IntLRGS3D(const CFun31& func, const CFun11& funcy1, const CFun11& fu
     }
 
 }
-
-// Eigen与AstroLib类型转换
-//void ODS::MatrixXd2CMatrix(const MatrixXd & m1, CMatrix<DP> & m2)
-//{
-//    int Index1 = m1.rows();
-//    int Index2 = m1.cols();
-//    for (int i = 0; i < Index1; i++)
-//    {
-//        for (int j = 0; j < Index2; j++)
-//        {
-//            m2[i][j] = m1(i, j);
-//        }
-//    }
-//}
-//
-//void ODS::Vector3d2CVector(const Vector3d & v1, CVector<DP> & v2)
-//{
-//    v2.Resize(3);
-//    for (int i = 0; i < 3; i++)
-//    {
-//        v2[i] = v1(i);
-//    }
-//}
-//
-//void ODS::Vector3d2CCoord3(const Vector3d & v1, CCoord3 & v2)
-//{
-//    for (int i = 0; i < 3; i++)
-//    {
-//        v2[i] = v1(i);
-//    }
-//}
-

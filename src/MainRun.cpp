@@ -16,6 +16,13 @@ int main( void ) {
     Elem2Cart(Elem, state);
     cout << state << endl;
 
+    // Test ICS2VVLH transformation
+    VectorXd tar(6), cha(6), rel(6);
+    tar << 6778137, 0, 0, 1, 7000, 1;
+    cha << 6778037, 100, 100, 1, 7000, 1;
+    ICS2VVLH(tar, cha, rel);
+    cout << rel << endl;
+
     return 0;
 }
 

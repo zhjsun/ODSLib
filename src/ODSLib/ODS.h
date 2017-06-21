@@ -28,158 +28,39 @@ namespace ODS {
 template <typename T>
 bool RotationAxis(const int axis, const T alpha, Eigen::Matrix<T, 3, 3> & Mtx);
 
-/// Return transformation matrix from VVLH to ICS.
+/// Compute transformation matrix from VVLH to ICS.
 /// 计算从VVLH坐标系到输入直角坐标系（地心惯性系或地固系）的转换矩阵
 template <typename T>
 bool VVLH2ICSMtx(const Eigen::Matrix<T, 3, 1> & pos, 
     const Eigen::Matrix<T, 3, 1> & vel, Eigen::Matrix<T, 3, 3> & mtx);
 // bool VVLHToICSMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
 
-/// \brief Return transformation matrix from ICS to VVLH
+/// Compute transformation matrix from ICS to VVLH
 /// 计算从直角坐标系到VVLH坐标系的转换矩阵
 template <typename T>
 bool ICS2VVLHMtx(const Eigen::Matrix<T, 3, 1> & pos, 
     const Eigen::Matrix<T, 3, 1> & vel, Eigen::Matrix<T, 3, 3> & mtx);
 // bool ICSToVVLHMtx(const Eigen::Vector3d &pos, const Eigen::Vector3d &vel, Eigen::Matrix3d &mtx);
 
-//********************************************************************
-/// 计算从直角坐标系到VVLH坐标系的转换矩阵
-/// VVLH定义为：z轴指向地心，x轴与z轴垂直指向速度方向，y轴与其它两轴成右手坐标系.
-/// Return transformation matrix from VVLH(Vehicle Velocity Local Horizontal) to ICS.
-/// @Author	孙振江
-/// @Date	2016.12.20
-/// @Input
-/// @Param	pos		the position of vehicle 地心惯性系或地固系中的飞行器位置[m]
-/// @Param	vel		velocity of vehicle 地心惯性系或地固系中的飞行器速度[m/s]
-/// @Output
-/// @Param	mtx		ICS到VVLH的转移矩阵
-/// @Return			true=计算正确; false=输入数据异常
-//********************************************************************
-bool ICSToVVLH(const Eigen::VectorXd &Target, const Eigen::VectorXd &Chaser, Eigen::VectorXd &RelState);
+/// Transformate the coordinates from ICS to VVLH
+/// 从直角坐标系转换到VVLH坐标系
+template <typename T>
+bool ICS2VVLH(const Eigen::Matrix<T, Eigen::Dynamic, 1> & Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> & Chaser, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & RelState);
+// bool ICSToVVLH(const Eigen::VectorXd &Target, const Eigen::VectorXd &Chaser, Eigen::VectorXd &RelState);
 
-//********************************************************************
+/// Transformate Cartesian coordinates to classical elements
 /// 计算从直角坐标到轨道根数
-/// @Author	孙振江
-/// @Date	2016.12.21
-/// @Input
-/// @Param	cart	绝对轨道直角坐标[m, m/s]
-/// @Output
-/// @Param	elem	轨道根叔[m, rad]
-/// @Return			true=计算正确; false=输入数据异常
-//********************************************************************
-//bool Cart2Elem(const VectorXd & cart, Array<double, Dynamic, 1> & elem);
-//bool Cart2Elem(const Matrix<DA, Dynamic, 1> & cart, Array<DA, Dynamic, 1> & elem);
 template <typename T>
-bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> &cart, Eigen::Array<T, Eigen::Dynamic, 1> &elem)
-{
-    double GM_km = GM * 1e-9;
+bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart, 
+    Eigen::Array<T, Eigen::Dynamic, 1> & elem);
 
-    Eigen::Matrix<T, 3, 1> RVec, VVec; // 距离和速度矢量
-    RVec = cart.head(3) / 1000; // km
-    VVec = cart.tail(3) / 1000; // km/s
-    T rr = RVec.norm();         // 地心距, km
-    // 计算动量矩
-    Eigen::Matrix<T, 3, 1> HVec;
-    HVec = RVec.cross(VVec);
-    T hh = HVec.norm();
-    // 计算轨道倾角
-    T Inc = acos(HVec(2) / hh);
-    // 计算升交点赤经
-    T RAAN = atan(-HVec(0) / HVec(1));
-    if (cons(HVec(1)) > 0)
-    {
-        RAAN += Pi;
-    }
-    if (cons(RAAN) < 0)
-    {
-        RAAN += 2 * Pi;
-    }
-    // 计算偏心率矢量和大小
-    Eigen::Matrix<T, 3, 1> EVec;
-    EVec = VVec.cross(HVec) / GM_km - RVec / rr;
-    T Ecc = EVec.norm();
-    // 计算近地点纬度幅角
-    T w = atan(EVec(2) / ((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) * sin(Inc)));
-    if (cons(EVec(2)) > 0 && cons(w) < 0)
-    {
-        w += Pi;
-    }
-    else if (cons(EVec(2)) < 0 && cons(w) > 0)
-    {
-        w -= Pi;
-    }
-    // 计算半长轴
-    T SemiA = hh * hh / (GM_km * (1 - Ecc * Ecc)) * 1000; // m
-    // 计算真近点角
-    T u = atan(RVec(2) / ((RVec(1) * sin(RAAN) + RVec(0) * cos(RAAN)) * sin(Inc)));
-    if (cons(RVec(2)) > 0 && cons(u) < 0)
-    {
-        u += Pi;
-    }
-    else if (cons(RVec(2)) < 0 && cons(u) > 0)
-    {
-        u -= Pi;
-    }
-    T TrueA = u - w;
-    if (cons(TrueA) < -Pi)
-    {
-        TrueA += 2 * Pi;
-    }
-    else if (cons(TrueA) > Pi)
-    {
-        TrueA -= 2 * Pi;
-    }
-
-    elem(0) = SemiA;
-    elem(1) = Ecc;
-    elem(2) = Inc;
-    elem(3) = RAAN;
-    elem(4) = w;
-    elem(5) = TrueA;
-
-    return true;
-}
-
-//********************************************************************
+/// Transformate Cartesian coordinates to classical elements
 /// 计算从轨道根数到直角坐标
-/// @Author	孙振江
-/// @Date	2016.12.22
-/// @Input
-/// @Param	elem	轨道根叔[m, rad]
-/// @Output
-/// @Param	cart	绝对轨道直角坐标[m, m/s]
-/// @Return			true=计算正确; false=输入数据异常
-//********************************************************************
 template <typename T>
-bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> &elem, Eigen::Matrix<T, Eigen::Dynamic, 1> &cart)
-{
-    T SemiA = elem(0);
-    T Ecc = elem(1);
-    T Inc = elem(2);
-    T RAAN = elem(3);
-    T w = elem(4);
-    T TrueA = elem(5);
-
-    T p = SemiA * (1 - Ecc * Ecc); // 半通径
-    T h = sqrt(p * GM);
-    T r = p / (1 + Ecc * cos(TrueA));
-
-    Eigen::Matrix<T, 3, 3> M3NR, M1NI, M3Nw, M3NwPi2;
-    RotationAxis(3, -RAAN, M3NR);
-    RotationAxis(1, -Inc, M1NI);
-    RotationAxis(3, -w, M3Nw);
-    RotationAxis(3, -w - Pi / 2, M3NwPi2);
-    Eigen::Matrix<T, 3, 1> RInPlane, UnitVec, ii0, jj0;
-    RInPlane << r * cos(TrueA), r * sin(TrueA), 0;
-    UnitVec << 1, 0, 0;
-    ii0 = M3NR * M1NI * M3Nw * UnitVec;
-    jj0 = M3NR * M1NI * M3NwPi2 * UnitVec;
-
-    cart.head(3) = M3NR * M1NI * M3Nw * RInPlane;
-    cart.tail(3) = -h / p * sin(TrueA) * ii0 + h / p * (Ecc + cos(TrueA)) * jj0;
-
-    return true;
-}
+bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> & elem, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & cart);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 数学相关函数

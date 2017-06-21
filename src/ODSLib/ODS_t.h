@@ -100,4 +100,158 @@ bool ICS2VVLHMtx(const Eigen::Matrix<T, 3, 1> & pos,
     return true;
 }
 
+/// \brief Transformate the coordinates from ICS to VVLH
+/// 从直角坐标系转换到VVLH坐标系
+/// 
+/// The definition of VVLH coordinate system can be found in "VVLHToICSMtx"
+/// 
+/// \Param[in]  Target      the coordinates of target in ICS (m, m/s)
+/// \Param[in]  Chaser      the coordinates of chaser in ICS (m, m/s)
+/// \Param[out] RelState    the coordinates of chaser in target's VVLH (m, m/s)
+/// \Return	                true = normal; false = error
+template <typename T>
+bool ICS2VVLH(const Eigen::Matrix<T, Eigen::Dynamic, 1> & Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> & Chaser, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & RelState) {
+
+    Eigen::Matrix<T, 3, 3> Mo, Mw;                                // 坐标变换矩阵
+    Eigen::Matrix<T, 3, 1> RTar, VTar, RCha, VCha, RRel, VRel, w;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> M(6, 6);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> state(6);
+
+    RTar = Target.head(3);
+    VTar = Target.tail(3);
+    RCha = Chaser.head(3);
+    VCha = Chaser.tail(3);
+
+    ICS2VVLHMtx(RTar, VTar, Mo);
+    w = -Mo.row(1)*VTar.norm() / RTar.norm();
+    Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
+
+    M.topLeftCorner(3, 3) = Mo;
+    M.topRightCorner(3, 3).fill(0);
+    M.bottomLeftCorner(3, 3) = -Mo*Mw;
+    M.bottomRightCorner(3, 3) = Mo;
+    state = Chaser - Target;
+    RelState = M*state;
+
+    return true;
+}
+
+/// Transformate Cartesian coordinates to classical elements
+/// 计算从直角坐标到轨道根数
+/// 
+/// \Param[in]  cart    Cartesian coordinates (m, m/s)
+/// \Param[out] elem    classical elements (m, rad)
+/// \Return	            true = normal; false = error
+template <typename T>
+bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart, 
+    Eigen::Array<T, Eigen::Dynamic, 1> & elem) {
+
+    double GM_km = GM * 1e-9;
+
+    Eigen::Matrix<T, 3, 1> RVec, VVec; // 距离和速度矢量
+    RVec = cart.head(3) / 1000; // km
+    VVec = cart.tail(3) / 1000; // km/s
+    T rr = RVec.norm();         // 地心距, km
+    // 计算动量矩
+    Eigen::Matrix<T, 3, 1> HVec;
+    HVec = RVec.cross(VVec);
+    T hh = HVec.norm();
+    // 计算轨道倾角
+    T Inc = acos(HVec(2) / hh);
+    // 计算升交点赤经
+    T RAAN = atan(-HVec(0) / HVec(1));
+    if (cons(HVec(1)) > 0)
+    {
+        RAAN += Pi;
+    }
+    if (cons(RAAN) < 0)
+    {
+        RAAN += 2 * Pi;
+    }
+    // 计算偏心率矢量和大小
+    Eigen::Matrix<T, 3, 1> EVec;
+    EVec = VVec.cross(HVec) / GM_km - RVec / rr;
+    T Ecc = EVec.norm();
+    // 计算近地点纬度幅角
+    T w = atan(EVec(2) / ((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) * sin(Inc)));
+    if (cons(EVec(2)) > 0 && cons(w) < 0)
+    {
+        w += Pi;
+    }
+    else if (cons(EVec(2)) < 0 && cons(w) > 0)
+    {
+        w -= Pi;
+    }
+    // 计算半长轴
+    T SemiA = hh * hh / (GM_km * (1 - Ecc * Ecc)) * 1000; // m
+    // 计算真近点角
+    T u = atan(RVec(2) / ((RVec(1) * sin(RAAN) + RVec(0) * cos(RAAN)) * sin(Inc)));
+    if (cons(RVec(2)) > 0 && cons(u) < 0)
+    {
+        u += Pi;
+    }
+    else if (cons(RVec(2)) < 0 && cons(u) > 0)
+    {
+        u -= Pi;
+    }
+    T TrueA = u - w;
+    if (cons(TrueA) < -Pi)
+    {
+        TrueA += 2 * Pi;
+    }
+    else if (cons(TrueA) > Pi)
+    {
+        TrueA -= 2 * Pi;
+    }
+
+    elem(0) = SemiA;
+    elem(1) = Ecc;
+    elem(2) = Inc;
+    elem(3) = RAAN;
+    elem(4) = w;
+    elem(5) = TrueA;
+
+    return true;
+}
+
+/// Transformate Cartesian coordinates to classical elements
+/// 计算从轨道根数到直角坐标
+/// 
+/// \Param[in]  elem    classical elements (m, rad)
+/// \Param[out] cart    Cartesian coordinates (m, m/s)
+/// \Return	            true = normal; false = error
+template <typename T>
+bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> & elem, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & cart) {
+
+    T SemiA = elem(0);
+    T Ecc = elem(1);
+    T Inc = elem(2);
+    T RAAN = elem(3);
+    T w = elem(4);
+    T TrueA = elem(5);
+
+    T p = SemiA * (1 - Ecc * Ecc); // 半通径
+    T h = sqrt(p * GM);
+    T r = p / (1 + Ecc * cos(TrueA));
+
+    Eigen::Matrix<T, 3, 3> M3NR, M1NI, M3Nw, M3NwPi2;
+    RotationAxis(3, -RAAN, M3NR);
+    RotationAxis(1, -Inc, M1NI);
+    RotationAxis(3, -w, M3Nw);
+    RotationAxis(3, -w - Pi / 2, M3NwPi2);
+    Eigen::Matrix<T, 3, 1> RInPlane, UnitVec, ii0, jj0;
+    RInPlane << r * cos(TrueA), r * sin(TrueA), 0;
+    UnitVec << 1, 0, 0;
+    ii0 = M3NR * M1NI * M3Nw * UnitVec;
+    jj0 = M3NR * M1NI * M3NwPi2 * UnitVec;
+
+    cart.head(3) = M3NR * M1NI * M3Nw * RInPlane;
+    cart.tail(3) = -h / p * sin(TrueA) * ii0 + h / p * (Ecc + cos(TrueA)) * jj0;
+
+    return true;
+}
+
 }
