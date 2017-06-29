@@ -254,4 +254,42 @@ bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> & elem,
     return true;
 }
 
+/// Get the root of function for distance_point_ellipse by dichotomy
+/// 点到椭圆距离涉及非线性方程的二分法求解
+/// 
+/// \Param[in]  r0	
+/// \Param[in]  z0	
+/// \Param[in]  z1	
+/// \Param[in]  g
+/// \Return     s	
+template <typename T>
+T GetRoot(T r0, T z0, T z1, T g) {
+    T n0 = r0*z0;
+    T s0 = z1 - 1;
+    T s1;
+    if (g < 0) {
+        s1 = 0;
+    } else {
+        s1 = sqrt(Sqr(n0) + Sqr(z1)) - 1;
+    }
+    T s, ratio0, ratio1;
+    do {
+        s = (s0 + s1) / 2;
+        if (s==s0||s==s1) {
+            break;
+        }
+        ratio0 = n0 / (s + r0);
+        ratio1 = z1 / (s + 1);
+        g = Sqr(ratio0) + Sqr(ratio1) - 1;
+        if (cons(g) > 0) {
+            s0 = s;
+        } else if (cons(g) < 0) {
+            s1 = s;
+        } else {
+            break;
+        }
+    } while (fabs(cons(s1) - cons(s0) ) > 1e-6);
+    return s;
+}
+
 }
