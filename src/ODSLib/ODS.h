@@ -77,58 +77,21 @@ T Sqr(T x) { return x * x; }
 template <typename T>
 T GetRoot(T r0, T z0, T z1, T g);
 
-//********************************************************************
+/// Get the root of function for distance_point_ellipsoid by dichotomy
 /// 点到椭球距离涉及非线性方程的二分法求解
-/// @Author	孙振江
-/// @Date	2016.12.25
-/// @Input
-/// @Param	r0, r1
-/// @Param	z0, z1, z2
-/// @Param	g
-/// @Output
-/// @Param
-/// @Return	s
-//********************************************************************
-double GetRoot(double r0, double r1, double z0, double z1, double z2, double g);
+template <typename T>
+T GetRoot(T r0, T r1, T z0, T z1, T z2, T g);
+// double GetRoot(double r0, double r1, double z0, double z1, double z2, double g);
 
-//********************************************************************
+/// Compute distance from a point to an ellipse
 /// 点到椭圆距离求解
-/// Distance from a Point to an Ellipse, an Ellipsoid, or a Hyperellipsoid
-/// Geometric Tools, LLC, https://www.geometrictools.com/Documentation/DistancePointEllipseEllipsoid.pdf
-/// @Author	孙振江
-/// @Date   2016.12.25
-/// @Input
-/// @Param  e0          椭圆第一个主轴，e0 >= e1
-/// @Param  e1          椭圆第二个主轴
-/// @Param  y0          点的第一个坐标，y0 >= 0
-/// @Param  y1          点的第二个坐标，y1 >= 0
-/// @Output
-/// @Param	x0          椭圆上最近点第一坐标
-/// @Param	x1          椭圆上最近点第二坐标
-/// @Return	distance    最近距离
-//********************************************************************
-double DistancePointEllipse(double e0, double e1, double y0, double y1, double &x0, double &x1);
+template <typename T>
+T DistancePointEllipse(T e0, T e1, T y0, T y1, T &x0, T &x1);
 
-//********************************************************************
+/// Compute distance from a point to an ellipsoid
 /// 点到椭球距离求解
-/// Distance from a Point to an Ellipse, an Ellipsoid, or a Hyperellipsoid
-/// Geometric Tools, LLC, https://www.geometrictools.com/Documentation/DistancePointEllipseEllipsoid.pdf
-/// @Author	孙振江
-/// @Date   2016.12.25
-/// @Input
-/// @Param  e0          椭球第一个主轴，e0 >= e1 >= e2 >0
-/// @Param  e1          椭球第二个主轴
-/// @Param  e2          椭球第三个主轴
-/// @Param  y0          点的第一个坐标，y0 >= 0
-/// @Param  y1          点的第二个坐标，y1 >= 0
-/// @Param  y2          点的第三个坐标，y2 >= 0
-/// @Output
-/// @Param	x0          椭圆上最近点第一坐标
-/// @Param	x1          椭圆上最近点第二坐标
-/// @Param	x2          椭圆上最近点第三坐标
-/// @Return	distance    最近距离
-//********************************************************************
-double DistancePointEllipsoid(double e0, double e1, double e2, double y0, double y1, double y2, double &x0, double &x1, double &x2);
+template <typename T>
+T DistancePointEllipsoid(T e0, T e1, T e2, T y0, T y1, T y2, T &x0, T &x1, T &x2);
 
 //********************************************************************
 /// 计算点和椭球之间的最近距离
