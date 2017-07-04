@@ -93,58 +93,30 @@ T DistancePointEllipse(T e0, T e1, T y0, T y1, T &x0, T &x1);
 template <typename T>
 T DistancePointEllipsoid(T e0, T e1, T e2, T y0, T y1, T y2, T &x0, T &x1, T &x2);
 
-//********************************************************************
+/// Compute closet distance from a point to an ellipsoid
 /// 计算点和椭球之间的最近距离
-/// @author	孙振江
-/// @date	2017.1.2
-/// Input
-/// @param	pointPos		点的坐标，在椭球主轴坐标系中表示
-/// @param	ellipAx1		椭球的主轴长度x
-/// @param	ellipAx2		椭球的主轴长度y
-/// @param	ellipAx3		椭球的主轴长度z
-/// Output
-/// @param	distanceVec		最小距离矢量
-/// @param	posAtEllip		椭球面上最小距离对应的点，在椭球主轴坐标系中表示
-/// @return	true			计算成功
-/// 		false			点不在椭球外部
-//********************************************************************
-bool DistancePointEllipsoid(const Eigen::Vector3d &pointPos, double ellipAx1, double ellipAx2, double ellipAx3, Eigen::Vector3d &distanceVec, Eigen::Vector3d &posAtEllip);
+template <typename T>
+bool DistancePointEllipsoid(const Eigen::Matrix<T, 3, 1> &pointPos, 
+                            T ellipAx1, T ellipAx2, T ellipAx3, 
+                            Eigen::Matrix<T, 3, 1> &distanceVec, 
+                            Eigen::Matrix<T, 3, 1> &posAtEllip);
 
-//********************************************************************
+/// Compute closet distance between two ellipsoids
 /// 计算椭球和椭球之间的最近距离
-/// @author	Wang Hua(更新仿真库还不是很熟练，暂时添加一个函数：牛智勇)
-/// @date	2012-04-13/2017.1.3
-/// Input
-/// @param	ellipAx11			第一个椭球的主轴长度x
-/// @param	ellipAx12			第一个椭球的主轴长度y
-/// @param	ellipAx13			第一个椭球的主轴长度z
-/// @param	ellipAx21			第二个椭球的主轴长度x
-/// @param	ellipAx22			第二个椭球的主轴长度y
-/// @param	ellipAx23			第二个椭球的主轴长度z
-/// @param	mtx1To2				从第一个椭球的主轴坐标系转到第二个椭球的主轴坐标系的矩阵
-/// @param	ellip2AtEllip1Pos	第二个椭球中心在第一个椭球主轴坐标系中的位置，在第一个椭球主轴坐标系中表示
-/// Output
-/// @param	distanceVec12		最小距离矢量，从第一个椭球到第二个椭球，在第一个椭球主轴坐标系中表示
-/// @param	posAtEllip1			第一个椭球面上最小距离对应的点，在第一个椭球主轴坐标系中表示
-/// @param	posAtEllip2			第二个椭球面上最小距离对应的点，在第二个椭球主轴坐标系中表示
-/// @return	true				计算成功
-///			false				椭球接触或相交，或者没有在规定次数内收敛
-//********************************************************************
-bool DistanceEllipsoid(double ellipAx11, double ellipAx12, double ellipAx13, double ellipAx21, double ellipAx22, double ellipAx23,
-                       const Eigen::MatrixXd &mtx1To2, const Eigen::Vector3d &ellip2AtEllip1Pos, Eigen::Vector3d &distanceVec12, Eigen::Vector3d &posAtEllip1, Eigen::Vector3d &posAtEllip2);
+template <typename T>
+bool DistanceEllipsoid(T ellipAx11, T ellipAx12, T ellipAx13, 
+                       T ellipAx21, T ellipAx22, T ellipAx23,
+                       const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &mtx1To2, 
+                       const Eigen::Matrix<T, 3, 1> &ellip2AtEllip1Pos, 
+                       Eigen::Matrix<T, 3, 1> &distanceVec12, 
+                       Eigen::Matrix<T, 3, 1> &posAtEllip1, 
+                       Eigen::Matrix<T, 3, 1> &posAtEllip2);
 
-//********************************************************************
+/// Sort eigen values and vectors in descending order
 /// 对特征值和特征向量按照降序排列
-/// @Author	孙振江
-/// @Date	2017.1.3
-/// @Input
-/// @In/Out
-/// @Param	eigenvalue
-/// @Param	eigenvector
-/// @Output
-/// @Return
-//********************************************************************
-void EigenDesSort(Eigen::VectorXd &eigenvalue, Eigen::MatrixXd &eigenvector);
+template <typename T>
+void EigenDesSort(Eigen::Matrix<T, Eigen::Dynamic, 1> &eigenvalue, 
+                  Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &eigenvector);
 
 //********************************************************************
 /// ODE积分一步，变步长四阶龙格库塔

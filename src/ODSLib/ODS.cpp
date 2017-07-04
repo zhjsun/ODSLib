@@ -547,61 +547,61 @@ using namespace Eigen;
 /// @return	true			计算成功
 /// 		false			点不在椭球外部
 //********************************************************************
-bool ODS::DistancePointEllipsoid(const Vector3d& pointPos, double ellipAx1, double ellipAx2, double ellipAx3, Vector3d& distanceVec, Vector3d& posAtEllip)
-{
-    Vector3d s;          // 点的坐标符号变换标志
-    Vector3d e;          // 椭球主轴长度
-    Vector3d y;          // 点的坐标，变换到第一象限
-    Vector3d x;          // 椭球上最近点坐标
-
-    // 将点变换到第一象限
-    s.fill(1);
-    for (int i = 0; i < 3; i++)
-    {
-        if (pointPos(i) < 0)
-            s(i) = -1;
-    }
-    y = pointPos.cwiseProduct(s);
-    e(0) = ellipAx1;
-    e(1) = ellipAx2;
-    e(2) = ellipAx3;
-
-    // 判断点与椭球关系
-    if ((Sqr(y(0)/e(0))+ Sqr(y(1) / e(1))+ Sqr(y(2) / e(2)))<=1)
-    {
-        return false;
-    }
-    else
-    {
-        // 椭球主轴降序排列
-        double etmp, stmp, ytmp;
-        for (int i = 0; i < 2; i++)
-        {
-            for (int j = i+1; j < 3; j++)
-            {
-                if (e(i)<e(j))
-                {
-                    etmp = e(i);
-                    e(i) = e(j);
-                    e(j) = etmp;
-                    stmp = s(i);
-                    s(i) = s(j);
-                    s(j) = stmp;
-                    ytmp = y(i);
-                    y(i) = y(j);
-                    y(j) = ytmp;
-                }
-            }
-        }
-
-        DistancePointEllipsoid(e(0), e(1), e(2), y(0), y(1), y(2), x(0), x(1), x(2));
-
-        posAtEllip = x.cwiseProduct(s);
-        distanceVec = posAtEllip - pointPos;
-
-        return true;
-    }
-}
+// bool ODS::DistancePointEllipsoid(const Vector3d& pointPos, double ellipAx1, double ellipAx2, double ellipAx3, Vector3d& distanceVec, Vector3d& posAtEllip)
+// {
+//     Vector3d s;          // 点的坐标符号变换标志
+//     Vector3d e;          // 椭球主轴长度
+//     Vector3d y;          // 点的坐标，变换到第一象限
+//     Vector3d x;          // 椭球上最近点坐标
+// 
+//     // 将点变换到第一象限
+//     s.fill(1);
+//     for (int i = 0; i < 3; i++)
+//     {
+//         if (pointPos(i) < 0)
+//             s(i) = -1;
+//     }
+//     y = pointPos.cwiseProduct(s);
+//     e(0) = ellipAx1;
+//     e(1) = ellipAx2;
+//     e(2) = ellipAx3;
+// 
+//     // 判断点与椭球关系
+//     if ((Sqr(y(0)/e(0))+ Sqr(y(1) / e(1))+ Sqr(y(2) / e(2)))<=1)
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         // 椭球主轴降序排列
+//         double etmp, stmp, ytmp;
+//         for (int i = 0; i < 2; i++)
+//         {
+//             for (int j = i+1; j < 3; j++)
+//             {
+//                 if (e(i)<e(j))
+//                 {
+//                     etmp = e(i);
+//                     e(i) = e(j);
+//                     e(j) = etmp;
+//                     stmp = s(i);
+//                     s(i) = s(j);
+//                     s(j) = stmp;
+//                     ytmp = y(i);
+//                     y(i) = y(j);
+//                     y(j) = ytmp;
+//                 }
+//             }
+//         }
+// 
+//         DistancePointEllipsoid(e(0), e(1), e(2), y(0), y(1), y(2), x(0), x(1), x(2));
+// 
+//         posAtEllip = x.cwiseProduct(s);
+//         distanceVec = posAtEllip - pointPos;
+// 
+//         return true;
+//     }
+// }
 
 //********************************************************************
 /// 计算椭球和椭球之间的最近距离
@@ -623,38 +623,38 @@ bool ODS::DistancePointEllipsoid(const Vector3d& pointPos, double ellipAx1, doub
 /// @return	true				计算成功
 ///			false				椭球接触或相交，或者没有在规定次数内收敛
 //********************************************************************
-bool ODS::DistanceEllipsoid(double ellipAx11, double ellipAx12, double ellipAx13, double ellipAx21, double ellipAx22, double ellipAx23,
-    const MatrixXd& mtx1To2, const Vector3d& ellip2AtEllip1Pos, Vector3d& distanceVec12, Vector3d& posAtEllip1, Vector3d& posAtEllip2)
-{
-    //最大迭代次数50
-    const int ITER = 50;
-    const double EPSD = 1.0e-8;  double maxAx, minAx;
-    Vector3d point, distanceVec21;  //取第一个椭球上一点
-    maxAx = std::max<double>(ellipAx11, ellipAx12);
-    maxAx = std::max<double>(maxAx, ellipAx13);
-    minAx = std::min<double>(ellipAx11, ellipAx12);
-    minAx = std::min<double>(minAx, ellipAx13);
-    point[0] = point[1] = sqrt(0.5*minAx*minAx);
-    point[2] = ellipAx13*sqrt(fabs(1.0 - point[0] * point[0] / (ellipAx11*ellipAx11)
-        - point[1] * point[1] / (ellipAx12*ellipAx12)));
-    posAtEllip1 = point;
-
-    for (int iter = 0; iter<ITER; iter++)
-    {
-        point = mtx1To2*(posAtEllip1 - ellip2AtEllip1Pos);
-        if (!ODS::DistancePointEllipsoid(point, ellipAx21, ellipAx22, ellipAx23,
-            distanceVec21, posAtEllip2))
-            return false;
-
-        point = mtx1To2.transpose()*posAtEllip2 + ellip2AtEllip1Pos;
-        if (!ODS::DistancePointEllipsoid(point, ellipAx11, ellipAx12, ellipAx13,
-            distanceVec12, posAtEllip1))
-            return false;
-        if (fabs(distanceVec12.norm() - distanceVec21.norm()) < EPSD)
-            return true;
-    }
-    return false;
-}
+// bool ODS::DistanceEllipsoid(double ellipAx11, double ellipAx12, double ellipAx13, double ellipAx21, double ellipAx22, double ellipAx23,
+//     const MatrixXd& mtx1To2, const Vector3d& ellip2AtEllip1Pos, Vector3d& distanceVec12, Vector3d& posAtEllip1, Vector3d& posAtEllip2)
+// {
+//     //最大迭代次数50
+//     const int ITER = 50;
+//     const double EPSD = 1.0e-8;  double maxAx, minAx;
+//     Vector3d point, distanceVec21;  //取第一个椭球上一点
+//     maxAx = std::max<double>(ellipAx11, ellipAx12);
+//     maxAx = std::max<double>(maxAx, ellipAx13);
+//     minAx = std::min<double>(ellipAx11, ellipAx12);
+//     minAx = std::min<double>(minAx, ellipAx13);
+//     point[0] = point[1] = sqrt(0.5*minAx*minAx);
+//     point[2] = ellipAx13*sqrt(fabs(1.0 - point[0] * point[0] / (ellipAx11*ellipAx11)
+//         - point[1] * point[1] / (ellipAx12*ellipAx12)));
+//     posAtEllip1 = point;
+// 
+//     for (int iter = 0; iter<ITER; iter++)
+//     {
+//         point = mtx1To2*(posAtEllip1 - ellip2AtEllip1Pos);
+//         if (!ODS::DistancePointEllipsoid(point, ellipAx21, ellipAx22, ellipAx23,
+//             distanceVec21, posAtEllip2))
+//             return false;
+// 
+//         point = mtx1To2.transpose()*posAtEllip2 + ellip2AtEllip1Pos;
+//         if (!ODS::DistancePointEllipsoid(point, ellipAx11, ellipAx12, ellipAx13,
+//             distanceVec12, posAtEllip1))
+//             return false;
+//         if (fabs(distanceVec12.norm() - distanceVec21.norm()) < EPSD)
+//             return true;
+//     }
+//     return false;
+// }
 
 //********************************************************************
 /// 对特征值和特征向量按照降序排列
@@ -667,29 +667,29 @@ bool ODS::DistanceEllipsoid(double ellipAx11, double ellipAx12, double ellipAx13
 /// @Output	
 /// @Return	
 //********************************************************************
-void ODS::EigenDesSort(VectorXd& eigenvalue, MatrixXd& eigenvector)
-{
-    int N = eigenvalue.size();
-
-    double tmp;
-    VectorXd Vtmp(N);
-
-    for (int i = 0; i < N-1; i++)
-    {
-        for (int j = i+1; j < N; j++)
-        {
-            if (eigenvalue(i)<eigenvalue(j))
-            {
-                tmp = eigenvalue(i);
-                eigenvalue(i) = eigenvalue(j);
-                eigenvalue(j) = tmp;
-                Vtmp = eigenvector.col(i);
-                eigenvector.col(i) = eigenvector.col(j);
-                eigenvector.col(j) = Vtmp;
-            }
-        }
-    }
-}
+// void ODS::EigenDesSort(VectorXd& eigenvalue, MatrixXd& eigenvector)
+// {
+//     int N = eigenvalue.size();
+// 
+//     double tmp;
+//     VectorXd Vtmp(N);
+// 
+//     for (int i = 0; i < N-1; i++)
+//     {
+//         for (int j = i+1; j < N; j++)
+//         {
+//             if (eigenvalue(i)<eigenvalue(j))
+//             {
+//                 tmp = eigenvalue(i);
+//                 eigenvalue(i) = eigenvalue(j);
+//                 eigenvalue(j) = tmp;
+//                 Vtmp = eigenvector.col(i);
+//                 eigenvector.col(i) = eigenvector.col(j);
+//                 eigenvector.col(j) = Vtmp;
+//             }
+//         }
+//     }
+// }
 
 //********************************************************************
 /// 勒让德-高斯(Legendre-Gauss)数值积分函数
