@@ -705,37 +705,37 @@ using namespace Eigen;
 /// @Output	
 /// @Return	积分结果
 //********************************************************************
-double ODS::IntLRGS(const CFun11& f, double a, double b, double eps)
-{
-    int m, i, j;
-    double s, p, ep, h, aa, bb, w, x, g, fx;
-    static double t[5] = { -0.9061798459, -0.5384693101, 0.0, 0.5384693101, 0.9061798459 };
-    static double c[5] = { 0.2369268851, 0.4786286705, 0.5688888889, 0.4786286705, 0.2369268851 };
-    m = 1;
-    h = b - a; s = fabs(0.001*h);
-    p = 1.0e+35; ep = eps + 1.0;
-    while ((ep >= eps) && (fabs(h)>s))
-    {
-        g = 0.0;
-        for (i = 1; i <= m; i++)
-        {
-            aa = a + (i - 1.0)*h; bb = a + i*h;
-            w = 0.0;
-            for (j = 0; j <= 4; j++)
-            {
-                x = ((bb - aa)*t[j] + (bb + aa)) / 2.0;
-                f(x, fx);
-                w = w + fx*c[j];
-            }
-            g = g + w;
-        }
-        g = g*h / 2.0;
-        ep = fabs(g - p) / (1.0 + fabs(g));
-        p = g; m = m + 1; h = (b - a) / m;
-    }
-    return(g);
-
-}
+// double ODS::IntLRGS(const CFun11& f, double a, double b, double eps)
+// {
+//     int m, i, j;
+//     double s, p, ep, h, aa, bb, w, x, g, fx;
+//     static double t[5] = { -0.9061798459, -0.5384693101, 0.0, 0.5384693101, 0.9061798459 };
+//     static double c[5] = { 0.2369268851, 0.4786286705, 0.5688888889, 0.4786286705, 0.2369268851 };
+//     m = 1;
+//     h = b - a; s = fabs(0.001*h);
+//     p = 1.0e+35; ep = eps + 1.0;
+//     while ((ep >= eps) && (fabs(h)>s))
+//     {
+//         g = 0.0;
+//         for (i = 1; i <= m; i++)
+//         {
+//             aa = a + (i - 1.0)*h; bb = a + i*h;
+//             w = 0.0;
+//             for (j = 0; j <= 4; j++)
+//             {
+//                 x = ((bb - aa)*t[j] + (bb + aa)) / 2.0;
+//                 f(x, fx);
+//                 w = w + fx*c[j];
+//             }
+//             g = g + w;
+//         }
+//         g = g*h / 2.0;
+//         ep = fabs(g - p) / (1.0 + fabs(g));
+//         p = g; m = m + 1; h = (b - a) / m;
+//     }
+//     return(g);
+// 
+// }
 
 //********************************************************************
 /// 三重积分：勒让德-高斯(Legendre-Gauss)方法
@@ -755,84 +755,85 @@ double ODS::IntLRGS(const CFun11& f, double a, double b, double eps)
 /// @Output	
 /// @Return	积分结果
 //********************************************************************
-double ODS::IntLRGS3D(const CFun31& func, const CFun11& funcy1, const CFun11& funcy2, const CFun21& funcz1, const CFun21& funcz2,
-    double x1, double x2, int js[3])
-{
-    int n = 3;
-    int m, j, k, q, l, *is;
-    double y[2], p, s, *x, *a, *b;
-    static double t[5] = { -0.9061798459,-0.5384693101,0.0,
-        0.5384693101,0.9061798459 };
-    static double c[5] = { 0.2369268851,0.4786286705,0.5688888889,
-        0.4786286705,0.2369268851 };
-    is = (int *)malloc(2 * (n + 1) * sizeof(int));
-    x = (double*)malloc(n * sizeof(double));
-    a = (double*)malloc(2 * (n + 1) * sizeof(double));
-    b = (double*)malloc((n + 1) * sizeof(double));
-    m = 1; l = 1;
-    a[n] = 1.0; a[2 * n + 1] = 1.0;
-    while (l == 1)
-    {
-        for (j = m; j <= n; j++)
-        {
-            //fgauss(j - 1, n, x, y);
-            if (j==1)
-            {
-                y[0] = x1;
-                y[1] = x2;
-            }
-            else if (j==2)
-            {
-                funcy1(x[0], y[0]);
-                funcy2(x[0], y[1]);
-            }
-            else
-            {
-                funcz1(x[0], x[1], y[0]);
-                funcz2(x[0], x[1], y[1]);
-            }
-            a[j - 1] = 0.5*(y[1] - y[0]) / js[j - 1];
-            b[j - 1] = a[j - 1] + y[0];
-            x[j - 1] = a[j - 1] * t[0] + b[j - 1];
-            a[n + j] = 0.0;
-            is[j - 1] = 1; is[n + j] = 1;
-        }
-        j = n; q = 1;
-        while (q == 1)
-        {
-            k = is[j - 1];
-            if (j == n) /*p = fgausf(n, x);*/ func(x[0], x[1], x[2], p);
-            else p = 1.0;
-            a[n + j] = a[n + j + 1] * a[j] * p*c[k - 1] + a[n + j];
-            is[j - 1] = is[j - 1] + 1;
-            if (is[j - 1]>5)
-                if (is[n + j] >= js[j - 1])
-                {
-                    j = j - 1; q = 1;
-                    if (j == 0)
-                    {
-                        s = a[n + 1] * a[0]; free(is); free(x);
-                        free(a); free(b); return(s);
-                    }
-                }
-                else
-                {
-                    is[n + j] = is[n + j] + 1;
-                    b[j - 1] = b[j - 1] + a[j - 1] * 2.0;
-                    is[j - 1] = 1; k = is[j - 1];
-                    x[j - 1] = a[j - 1] * t[k - 1] + b[j - 1];
-                    if (j == n) q = 1;
-                    else q = 0;
-                }
-            else
-            {
-                k = is[j - 1];
-                x[j - 1] = a[j - 1] * t[k - 1] + b[j - 1];
-                if (j == n) q = 1;
-                else q = 0;
-            }
-        }
-        m = j + 1;
-    }
-
-}
+// double ODS::IntLRGS3D(const CFun31& func, const CFun11& funcy1, const CFun11& funcy2, const CFun21& funcz1, const CFun21& funcz2,
+//     double x1, double x2, int js[3])
+// {
+//     int n = 3;
+//     int m, j, k, q, l, *is;
+//     double y[2], p, s, *x, *a, *b;
+//     static double t[5] = { -0.9061798459,-0.5384693101,0.0,
+//         0.5384693101,0.9061798459 };
+//     static double c[5] = { 0.2369268851,0.4786286705,0.5688888889,
+//         0.4786286705,0.2369268851 };
+//     is = (int *)malloc(2 * (n + 1) * sizeof(int));
+//     x = (double*)malloc(n * sizeof(double));
+//     a = (double*)malloc(2 * (n + 1) * sizeof(double));
+//     b = (double*)malloc((n + 1) * sizeof(double));
+//     m = 1; l = 1;
+//     a[n] = 1.0; a[2 * n + 1] = 1.0;
+//     while (l == 1)
+//     {
+//         for (j = m; j <= n; j++)
+//         {
+//             //fgauss(j - 1, n, x, y);
+//             if (j==1)
+//             {
+//                 y[0] = x1;
+//                 y[1] = x2;
+//             }
+//             else if (j==2)
+//             {
+//                 funcy1(x[0], y[0]);
+//                 funcy2(x[0], y[1]);
+//             }
+//             else
+//             {
+//                 funcz1(x[0], x[1], y[0]);
+//                 funcz2(x[0], x[1], y[1]);
+//             }
+//             a[j - 1] = 0.5*(y[1] - y[0]) / js[j - 1];
+//             b[j - 1] = a[j - 1] + y[0];
+//             x[j - 1] = a[j - 1] * t[0] + b[j - 1];
+//             a[n + j] = 0.0;
+//             is[j - 1] = 1; is[n + j] = 1;
+//         }
+//         j = n; q = 1;
+//         while (q == 1)
+//         {
+//             k = is[j - 1];
+//             if (j == n) /*p = fgausf(n, x);*/ func(x[0], x[1], x[2], p);
+//             else p = 1.0;
+//             a[n + j] = a[n + j + 1] * a[j] * p*c[k - 1] + a[n + j];
+//             is[j - 1] = is[j - 1] + 1;
+//             if (is[j - 1]>5)
+//                 if (is[n + j] >= js[j - 1])
+//                 {
+//                     j = j - 1; q = 1;
+//                     if (j == 0)
+//                     {
+//                         s = a[n + 1] * a[0]; free(is); free(x);
+//                         free(a); free(b); return(s);
+//                     }
+//                 }
+//                 else
+//                 {
+//                     is[n + j] = is[n + j] + 1;
+//                     b[j - 1] = b[j - 1] + a[j - 1] * 2.0;
+//                     is[j - 1] = 1; k = is[j - 1];
+//                     x[j - 1] = a[j - 1] * t[k - 1] + b[j - 1];
+//                     if (j == n) q = 1;
+//                     else q = 0;
+//                 }
+//             else
+//             {
+//                 k = is[j - 1];
+//                 x[j - 1] = a[j - 1] * t[k - 1] + b[j - 1];
+//                 if (j == n) q = 1;
+//                 else q = 0;
+//             }
+//         }
+//         m = j + 1;
+//     }
+// 
+// }
+// 
