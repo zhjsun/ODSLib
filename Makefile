@@ -6,7 +6,7 @@ Objects =  	$(BuildDir)/MainRun.o
 # 目标文件
 Target = bin/runner
 # 编译器设置
-CC = g++
+CC = clang++
 # 编译选项设置
 Compiler = $(Release) -std=c++11
 Debug = -g -Og
