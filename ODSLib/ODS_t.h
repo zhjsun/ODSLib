@@ -670,7 +670,7 @@ void RK4Step(const CRightFun<T> &f, double t, double h, double eps,
         }
         p = 0.0;
         for (i = 0; i <= n - 1; i++) {
-            q = abs(cons(y[i]) - cons(g[i]));
+            q = abs(cons(y[i]) / cons(g[i]) - 1.0);
             if (q > p) {
                 p = q;
             }
