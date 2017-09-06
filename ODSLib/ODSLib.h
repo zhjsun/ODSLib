@@ -6,10 +6,9 @@
 
 #pragma once
 
-#include "ODS_DACE.h"
-#include "ODS.h"
-#include "ODSConstant.h"
-#include "ODSRightFun.h"
-
-// include the template implementations here after everything is defined
-#include "ODS_t.h"
+#include "ODSLib/ODS_DACE.h"
+#include "ODSLib/ODS_Constant.h"
+#include "ODSLib/ODS_RightFun.h"
+#include "ODSLib/ODS_Integrator.h"
+#include "ODSLib/ODS_Math.h"
+#include "ODSLib/ODS_Transformation.h"
