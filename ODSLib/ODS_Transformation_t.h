@@ -135,6 +135,45 @@ bool ICS2VVLH(const Eigen::Matrix<T, Eigen::Dynamic, 1> & Target,
     return true;
 }
 
+/// \brief Transformate the coordinates from VVLH to ICS
+/// 从VVLH坐标系转换到直角坐标系
+/// 
+/// The definition of VVLH coordinate system can be found in "VVLHToICSMtx"
+/// 
+/// \Param[in]  Target      the coordinates of target in ICS (m, m/s)
+/// \Param[in]  RelState    the coordinates of chaser in target's VVLH (m, m/s)
+/// \Param[out] Chaser      the coordinates of chaser in ICS (m, m/s)
+/// \Return	                true = normal; false = error
+template <typename T>
+bool VVLH2ICS(const Eigen::Matrix<T, Eigen::Dynamic, 1> &Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> &RelState, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> &Chaser) {
+
+    Eigen::Matrix<T, 3, 3> Mo, Mw;                                // 坐标变换矩阵
+    Eigen::Matrix<T, 3, 1> RTar, VTar, RCha, VCha, RRel, VRel, w;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> M(6, 6), M_inv(6, 6);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> state(6);
+
+    RTar = Target.head(3);
+    VTar = Target.tail(3);
+    RCha = Chaser.head(3);
+    VCha = Chaser.tail(3);
+
+    ICS2VVLHMtx(RTar, VTar, Mo);
+    w = -Mo.row(1)*VTar.norm() / RTar.norm();
+    Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
+
+    M.topLeftCorner(3, 3) = Mo;
+    M.topRightCorner(3, 3).fill(0);
+    M.bottomLeftCorner(3, 3) = -Mo*Mw;
+    M.bottomRightCorner(3, 3) = Mo;
+    M_inv = M.inverse();
+
+    Chaser = M_inv*RelState + Target;
+
+    return true;
+}
+
 /// \brief Return transformation matrix from LVLH to ICS.
 /// 计算从LVLH坐标系到输入直角坐标系（地心惯性系或地固系）的转换矩阵
 /// 
@@ -201,6 +240,83 @@ bool ICS2LVLHMtx(const Eigen::Matrix<T, 3, 1> & pos,
     mtx.row(0) = pos / r;
     mtx.row(1) = ss / s;
     mtx.row(2) = nn / n;
+
+    return true;
+}
+
+/// \brief Transformate the coordinates from ICS to LVLH
+/// 从直角坐标系转换到LVLH坐标系
+/// 
+/// The definition of LVLH coordinate system can be found in "LVLHToICSMtx"
+/// 
+/// \Param[in]  Target      the coordinates of target in ICS (m, m/s)
+/// \Param[in]  Chaser      the coordinates of chaser in ICS (m, m/s)
+/// \Param[out] RelState    the coordinates of chaser in target's LVLH (m, m/s)
+/// \Return	                true = normal; false = error
+template <typename T>
+bool ICS2LVLH(const Eigen::Matrix<T, Eigen::Dynamic, 1> & Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> & Chaser, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & RelState) {
+
+    Eigen::Matrix<T, 3, 3> Mo, Mw;                                // 坐标变换矩阵
+    Eigen::Matrix<T, 3, 1> RTar, VTar, RCha, VCha, RRel, VRel, w;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> M(6, 6);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> state(6);
+
+    RTar = Target.head(3);
+    VTar = Target.tail(3);
+    RCha = Chaser.head(3);
+    VCha = Chaser.tail(3);
+
+    ICS2LVLHMtx(RTar, VTar, Mo);
+    w = Mo.row(2) * VTar.norm() / RTar.norm();
+    Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
+
+    M.topLeftCorner(3, 3) = Mo;
+    M.topRightCorner(3, 3).fill(0);
+    M.bottomLeftCorner(3, 3) = -Mo*Mw;
+    M.bottomRightCorner(3, 3) = Mo;
+    state = Chaser - Target;
+    RelState = M*state;
+
+    return true;
+}
+
+/// \brief Transformate the coordinates from LVLH to ICS
+/// 从LVLH坐标系转换到直角坐标系
+/// 
+/// The definition of LVLH coordinate system can be found in "LVLHToICSMtx"
+/// 
+/// \Param[in]  Target      the coordinates of target in ICS (m, m/s)
+/// \Param[in]  RelState    the coordinates of chaser in target's LVLH (m, m/s)
+/// \Param[out] Chaser      the coordinates of chaser in ICS (m, m/s)
+/// \Return	                true = normal; false = error
+template <typename T>
+bool LVLH2ICS(const Eigen::Matrix<T, Eigen::Dynamic, 1> &Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> &RelState, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> &Chaser) {
+
+    Eigen::Matrix<T, 3, 3> Mo, Mw;                                // 坐标变换矩阵
+    Eigen::Matrix<T, 3, 1> RTar, VTar, RCha, VCha, RRel, VRel, w;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> M(6, 6), M_inv(6, 6);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> state(6);
+
+    RTar = Target.head(3);
+    VTar = Target.tail(3);
+    RCha = Chaser.head(3);
+    VCha = Chaser.tail(3);
+
+    ICS2LVLHMtx(RTar, VTar, Mo);
+    w = Mo.row(2) * VTar.norm() / RTar.norm();
+    Mw << 0, -w(2), w(1), w(2), 0, -w(0), -w(1), w(0), 0;
+
+    M.topLeftCorner(3, 3) = Mo;
+    M.topRightCorner(3, 3).fill(0);
+    M.bottomLeftCorner(3, 3) = -Mo*Mw;
+    M.bottomRightCorner(3, 3) = Mo;
+    M_inv = M.inverse();
+
+    Chaser = M_inv*RelState + Target;
 
     return true;
 }

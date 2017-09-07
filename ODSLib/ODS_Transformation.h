@@ -51,6 +51,13 @@ bool ICS2VVLH(const Eigen::Matrix<T, Eigen::Dynamic, 1> & Target,
     const Eigen::Matrix<T, Eigen::Dynamic, 1> & Chaser, 
     Eigen::Matrix<T, Eigen::Dynamic, 1> & RelState);
 
+/// Transformate the coordinates from VVLH to ICS
+/// 从VVLH坐标系转换到直角坐标系
+template <typename T>
+bool VVLH2ICS(const Eigen::Matrix<T, Eigen::Dynamic, 1> &Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> &RelState, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> &Chaser );
+
 /// Compute transformation matrix from LVLH to ICS.
 /// 计算从LVLH坐标系到输入直角坐标系（地心惯性系或地固系）的转换矩阵
 template <typename T>
@@ -62,6 +69,20 @@ bool LVLH2ICSMtx(const Eigen::Matrix<T, 3, 1> & pos,
 template <typename T>
 bool ICS2LVLHMtx(const Eigen::Matrix<T, 3, 1> & pos, 
     const Eigen::Matrix<T, 3, 1> & vel, Eigen::Matrix<T, 3, 3> & mtx);
+
+/// Transformate the coordinates from ICS to LVLH
+/// 从直角坐标系转换到LVLH坐标系
+template <typename T>
+bool ICS2LVLH(const Eigen::Matrix<T, Eigen::Dynamic, 1> & Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> & Chaser, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & RelState);
+
+/// Transformate the coordinates from LVLH to ICS
+/// 从LVLH坐标系转换到直角坐标系
+template <typename T>
+bool LVLH2ICS(const Eigen::Matrix<T, Eigen::Dynamic, 1> &Target, 
+    const Eigen::Matrix<T, Eigen::Dynamic, 1> &RelState, 
+    Eigen::Matrix<T, Eigen::Dynamic, 1> &Chaser );
 
 
 ////////////////////////////////////////////////////////////////////////////////

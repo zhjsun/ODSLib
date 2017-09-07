@@ -9,21 +9,32 @@ using namespace ODS;
 
 int main( void ) {
 
-    // Test Cartesian-Element transformation
-    VectorXd state(6);
-    ArrayXd Elem(6);
-
-    state << 6778137, 0, 0, 1, 7000, 1;
-    Cart2Elem(state, Elem);
-    Elem2Cart(Elem, state);
-    cout << state << endl;
-
-    // Test ICS2VVLH transformation
+    // Test coordinates transformation
     VectorXd tar(6), cha(6), rel(6);
-    tar << 6778137, 0, 0, 1, 7000, 1;
-    cha << 6778037, 100, 100, 1, 7000, 1;
+    ArrayXd Elem(6);
+    tar << 6778137, 1000, 2000, 1, 7000, 1;
+    cout << "Target state:" << endl << tar << endl;
+
+    Cart2Elem(tar, Elem);
+    cout << "Target element:" << endl << Elem << endl;
+
+    Elem2Cart(Elem, tar);
+    cout << "Target state:" << endl << tar << endl;
+
+    rel << -100, -1000, 50, 1, 1, 1;
+    cout << "Chaser in LVLH: " << endl << rel << endl;
+
+    LVLH2ICS(tar, rel, cha);
+    cout << "Chaser in ICS:" << endl << cha << endl;
+
     ICS2VVLH(tar, cha, rel);
-    cout << rel << endl;
+    cout << "Chaser in VVLH: " << endl << rel << endl;
+
+    VVLH2ICS(tar, rel, cha);
+    cout << "Chaser in ICS:" << endl << cha << endl;
+
+    ICS2LVLH(tar, cha, rel);
+    cout << "Chaser in LVLH: " << endl << rel << endl;
 
     return 0;
 }
