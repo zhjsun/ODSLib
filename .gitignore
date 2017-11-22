@@ -5,6 +5,7 @@
 
 # VScode configures
 .vscode/
+*.py
 
 # Prerequisites
 *.d

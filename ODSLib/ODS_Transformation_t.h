@@ -344,7 +344,12 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     // 计算轨道倾角
     T Inc = acos(HVec(2) / hh);
     // 计算升交点赤经
-    T RAAN = atan(-HVec(0) / HVec(1));
+    T RAAN;
+    if(abs(cons(Inc)) < 1e-15) {
+        RAAN = 0.0;
+    } else {
+        RAAN = atan(-HVec(0) / HVec(1));
+    }
     if (cons(HVec(1)) > 0)
     {
         RAAN += Pi;
@@ -358,15 +363,24 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     EVec = VVec.cross(HVec) / GM_km - RVec / rr;
     T Ecc = EVec.norm();
     // 计算近地点纬度幅角
-    T w = atan(EVec(2) / ((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) * sin(Inc)));
-    if (cons(EVec(2)) > 0 && cons(w) < 0)
-    {
+    T w;
+    if(abs(cons(Ecc)) < 1e-15) {
+        w = 0.0;
+    } else {
+        w = acos((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) / Ecc);
+    }
+    if(cons(EVec(2)) < 0) {
         w += Pi;
     }
-    else if (cons(EVec(2)) < 0 && cons(w) > 0)
-    {
-        w -= Pi;
-    }
+    // w = atan(EVec(2) / ((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) * sin(Inc)));
+    // if (cons(EVec(2)) > 0 && cons(w) < 0)
+    // {
+    //     w += Pi;
+    // }
+    // else if (cons(EVec(2)) < 0 && cons(w) > 0)
+    // {
+    //     w -= Pi;
+    // }
     // 计算半长轴
     T SemiA = hh * hh / (GM_km * (1 - Ecc * Ecc)) * 1000; // m
     // 计算真近点角
