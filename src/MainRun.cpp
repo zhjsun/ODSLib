@@ -12,11 +12,13 @@ int main( void ) {
     // Test coordinates transformation
     VectorXd tar(6), cha(6), rel(6);
     ArrayXd Elem(6);
+
     tar << 6778137, 1000, 2000, 1, 7000, 1;
     Elem << 6778137, 0.0, 0.1, 2.0*atan(1.0), 2*atan(1), 0;
     cout << "Target state:" << endl << tar << endl;
 
 
+    Elem << 6778137, 0.999, 0.0, atan(1.0)*2, atan(1.0)*2, atan(1.0)*2;
     Elem2Cart(Elem, tar);
     cout << "Target state:" << endl << tar << endl;
 

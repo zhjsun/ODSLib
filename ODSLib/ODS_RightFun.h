@@ -27,7 +27,7 @@ class CRightFun
     /// @Param	x		初始函数值
     /// @Output
     /// @Param	result	计算得到的函数值
-    virtual void operator()(double t, const Eigen::Matrix<T, Eigen::Dynamic, 1> &x, Eigen::Matrix<T, Eigen::Dynamic, 1> &result) const = 0;
+    virtual void operator()(T t, const Eigen::Matrix<T, Eigen::Dynamic, 1> &x, Eigen::Matrix<T, Eigen::Dynamic, 1> &result) const = 0;
 };
 
 //
