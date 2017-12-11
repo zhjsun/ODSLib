@@ -345,14 +345,21 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     T Inc = acos(HVec(2) / hh);
     // 计算升交点赤经
     T RAAN;
-    if(abs(cons(Inc)) < 1e-15) {
+    if(abs(cons(Inc)) < 1e-12) {
+        // handle singularity
+        // !!!!!!!!!!! how to deal with DA data?
         RAAN = 0.0;
+    } else if(abs(cons(HVec(1))) < 1e-12) {
+        // use atan and acot to avoid nan problem
+        RAAN = Pi/2 - atan(-HVec(1) / HVec(0));
+        if (cons(HVec(0)) < 0) {
+            RAAN += Pi;
+        }
     } else {
         RAAN = atan(-HVec(0) / HVec(1));
-    }
-    if (cons(HVec(1)) > 0)
-    {
-        RAAN += Pi;
+        if (cons(HVec(1)) > 0) {
+            RAAN += Pi;
+        }
     }
     if (cons(RAAN) < 0)
     {
@@ -365,9 +372,15 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     // 计算近地点纬度幅角
     T w;
     if(abs(cons(Ecc)) < 1e-15) {
+        // !!!!!!!!!!!!!!!! how to deal with DA data?
         w = 0.0;
     } else {
+        // sometimes * maybe a little greater than 1 or less than -1, acos(*) 
         w = acos((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) / Ecc);
+
+        T tmp = (EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) / Ecc;
+        if((cons(tmp) > 1.0) && (cons(tmp) < 1.0+1e-12)) {
+        }
     }
     if(cons(EVec(2)) < 0) {
         w += Pi;

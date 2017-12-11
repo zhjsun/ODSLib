@@ -8,8 +8,8 @@ Target = bin/runner
 # 编译器设置
 CC = clang++
 # 编译选项设置
-Compiler = $(Release) -std=c++11
-Debug = -g -Og
+Compiler = $(Debug) -std=c++11
+Debug = -g
 Release = -O3
 # OpenMP并行设置
 OpenMP = -fopenmp
