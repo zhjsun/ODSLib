@@ -4,7 +4,7 @@ BuildDir = ./build
 # 中间文件
 Objects =  	$(BuildDir)/MainRun.o
 # 目标文件
-Target = bin/runner
+Target = runner
 # 编译器设置
 CC = clang++
 # 编译选项设置
@@ -14,8 +14,7 @@ Release = -O3
 # OpenMP并行设置
 OpenMP = -fopenmp
 # 包含头文件目录
-Include = -I ./include \
-		  -I .
+Include = -I .
 # 连接产生目标文件
 $(Target) : $(Objects)
 	$(CC) -o $(Target) $(Objects)
