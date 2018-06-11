@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <cmath>
+
 /// All the constants are defined in the namespace ODS
 /// 
 namespace ODS {
