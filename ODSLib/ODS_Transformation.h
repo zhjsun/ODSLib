@@ -10,7 +10,7 @@
 #include <cmath>
 #include <vector>
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 #include "ODSLib/ODS_Constant.h"
 #include "ODSLib/ODS_RightFun.h"

@@ -5,7 +5,7 @@
 /// \date 2017.Jan.19
 
 #pragma once
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 /// All the functions are in the namespace ODS
 /// 

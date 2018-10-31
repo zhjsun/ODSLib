@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include "ODSLib/ODSLib.h"
 
 using namespace std;
