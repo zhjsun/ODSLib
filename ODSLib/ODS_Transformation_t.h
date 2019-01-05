@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace ODS {
 
 /// Coordinate rotation matrix
@@ -329,7 +331,7 @@ bool LVLH2ICS(const Eigen::Matrix<T, Eigen::Dynamic, 1> &Target,
 /// \Return	            true = normal; false = error
 template <typename T>
 bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart, 
-    Eigen::Array<T, Eigen::Dynamic, 1> & elem) {
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & elem) {
 
     double GM_km = GM * 1e-9;
 
@@ -337,86 +339,61 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     RVec = cart.head(3) / 1000; // km
     VVec = cart.tail(3) / 1000; // km/s
     T rr = RVec.norm();         // 地心距, km
-    // 计算动量矩
-    Eigen::Matrix<T, 3, 1> HVec;
+    T vv = VVec.norm();
+
+    // unit vector
+    Eigen::Matrix<T, 3, 1> XVec, YVec, ZVec;
+    XVec << 1, 0, 0;
+    YVec << 0, 1, 0;
+    ZVec << 0, 0, 1;
+
+    // calculate angular-momentum and eccentricity
+    Eigen::Matrix<T, 3, 1> HVec, NVec, EVec;
     HVec = RVec.cross(VVec);
     T hh = HVec.norm();
-    // 计算轨道倾角
-    T Inc = acos(HVec(2) / hh);
-    // 计算升交点赤经
-    T RAAN;
-    if(abs(cons(Inc)) < 1e-12) {
-        // handle singularity
-        // !!!!!!!!!!! how to deal with DA data?
-        RAAN = 0.0;
-    } else if(abs(cons(HVec(1))) < 1e-12) {
-        // use atan and acot to avoid nan problem
-        RAAN = Pi/2 - atan(-HVec(1) / HVec(0));
-        if (cons(HVec(0)) < 0) {
-            RAAN += Pi;
-        }
-    } else {
-        RAAN = atan(-HVec(0) / HVec(1));
-        if (cons(HVec(1)) > 0) {
-            RAAN += Pi;
-        }
-    }
-    if (cons(RAAN) < 0)
-    {
-        RAAN += 2 * Pi;
-    }
-    // 计算偏心率矢量和大小
-    Eigen::Matrix<T, 3, 1> EVec;
-    EVec = VVec.cross(HVec) / GM_km - RVec / rr;
+    NVec = ZVec.cross(HVec);
+    T nn = NVec.norm();
+    EVec = ((vv*vv - GM_km/rr)*RVec - (RVec.dot(VVec))*VVec)/GM_km;
     T Ecc = EVec.norm();
-    // 计算近地点纬度幅角
-    T w;
-    if(abs(cons(Ecc)) < 1e-15) {
-        // !!!!!!!!!!!!!!!! how to deal with DA data?
-        w = 0.0;
+
+    // calculate semi-axis
+    T SemiA, p, xi;
+    xi = vv*vv/2.0 - GM_km/rr;
+    if(abs(cons(Ecc)-1.0) < 1e-6) {
+        SemiA = 0;
+        p = hh*hh/GM_km;
+        std::cout << "Parabolic orbit!!" << std::endl;
     } else {
-        // sometimes * maybe a little greater than 1 or less than -1, acos(*) 
-        w = acos((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) / Ecc);
-
-        T tmp = (EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) / Ecc;
-        if((cons(tmp) > 1.0) && (cons(tmp) < 1.0+1e-12)) {
-        }
-    }
-    if(cons(EVec(2)) < 0) {
-        w += Pi;
-    }
-    // w = atan(EVec(2) / ((EVec(1) * sin(RAAN) + EVec(0) * cos(RAAN)) * sin(Inc)));
-    // if (cons(EVec(2)) > 0 && cons(w) < 0)
-    // {
-    //     w += Pi;
-    // }
-    // else if (cons(EVec(2)) < 0 && cons(w) > 0)
-    // {
-    //     w -= Pi;
-    // }
-    // 计算半长轴
-    T SemiA = hh * hh / (GM_km * (1 - Ecc * Ecc)) * 1000; // m
-    // 计算真近点角
-    T u = atan(RVec(2) / ((RVec(1) * sin(RAAN) + RVec(0) * cos(RAAN)) * sin(Inc)));
-    if (cons(RVec(2)) > 0 && cons(u) < 0)
-    {
-        u += Pi;
-    }
-    else if (cons(RVec(2)) < 0 && cons(u) > 0)
-    {
-        u -= Pi;
-    }
-    T TrueA = u - w;
-    if (cons(TrueA) < -Pi)
-    {
-        TrueA += 2 * Pi;
-    }
-    else if (cons(TrueA) > Pi)
-    {
-        TrueA -= 2 * Pi;
+        SemiA = -GM_km/(2.0*xi);
+        p = SemiA * (1 - Ecc*Ecc);
     }
 
-    elem(0) = SemiA;
+    // calculate inclination
+    T Inc;
+    Inc = acos(HVec.dot(ZVec)/hh);
+
+    // calculate RAAN
+    T RAAN;
+    RAAN = acos(NVec.dot(XVec)/nn);
+    if(cons(NVec.dot(YVec)) < 0.0) {
+        RAAN = 2*ODS::Pi - RAAN;
+    }
+
+    // calculate omega
+    T w;
+    w = acos(NVec.dot(EVec)/(nn*Ecc));
+    if(cons(EVec.dot(ZVec)) < 0.0) {
+        w = 2*ODS::Pi - w;
+    }
+
+    // calculate omega
+    T TrueA;
+    TrueA = acos(EVec.dot(RVec)/(Ecc*rr));
+    if(cons(RVec.dot(VVec)) < 0.0) {
+        TrueA = 2*ODS::Pi - TrueA;
+    }
+
+    elem(0) = SemiA * 1000.0;
     elem(1) = Ecc;
     elem(2) = Inc;
     elem(3) = RAAN;
@@ -433,7 +410,7 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
 /// \Param[out] cart    Cartesian coordinates (m, m/s)
 /// \Return	            true = normal; false = error
 template <typename T>
-bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> & elem, 
+bool Elem2Cart(const Eigen::Matrix<T, Eigen::Dynamic, 1> & elem, 
     Eigen::Matrix<T, Eigen::Dynamic, 1> & cart) {
 
     T SemiA = elem(0);
@@ -444,22 +421,28 @@ bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> & elem,
     T TrueA = elem(5);
 
     T p = SemiA * (1 - Ecc * Ecc); // 半通径
-    T h = sqrt(p * GM);
     T r = p / (1 + Ecc * cos(TrueA));
 
-    Eigen::Matrix<T, 3, 3> M3NR, M1NI, M3Nw, M3NwPi2;
-    RotationAxis(3, -RAAN, M3NR);
-    RotationAxis(1, -Inc, M1NI);
-    RotationAxis(3, -w, M3Nw);
-    RotationAxis(3, -w - Pi / 2, M3NwPi2);
-    Eigen::Matrix<T, 3, 1> RInPlane, UnitVec, ii0, jj0;
-    RInPlane << r * cos(TrueA), r * sin(TrueA), 0;
-    UnitVec << 1, 0, 0;
-    ii0 = M3NR * M1NI * M3Nw * UnitVec;
-    jj0 = M3NR * M1NI * M3NwPi2 * UnitVec;
+    // position and velocity vector in orbital frame
+    Eigen::Matrix<T, 3, 1> r_orb, v_orb;
+    r_orb << r * cos(TrueA), r * sin(TrueA), 0.0;
+    v_orb << -sin(TrueA), Ecc + cos(TrueA), 0.0;
+    v_orb = sqrt(GM/p) * v_orb;
 
-    cart.head(3) = M3NR * M1NI * M3Nw * RInPlane;
-    cart.tail(3) = -h / p * sin(TrueA) * ii0 + h / p * (Ecc + cos(TrueA)) * jj0;
+    // orbital frame to inertial frame
+    Eigen::Matrix<T, 3, 3> alpha;
+    alpha(0, 0) =  cos(RAAN)*cos(w) - sin(RAAN)*sin(w)*cos(Inc);
+    alpha(0, 1) = -cos(RAAN)*sin(w) - sin(RAAN)*cos(w)*cos(Inc);
+    alpha(0, 2) =  sin(RAAN)*sin(Inc);
+    alpha(1, 0) =  sin(RAAN)*cos(w) + cos(RAAN)*sin(w)*cos(Inc);
+    alpha(1, 1) = -sin(RAAN)*sin(w) + cos(RAAN)*cos(w)*cos(Inc);
+    alpha(1, 2) = -cos(RAAN)*sin(Inc);
+    alpha(2, 0) = sin(w)*sin(Inc);
+    alpha(2, 1) = cos(w)*sin(Inc);
+    alpha(2, 2) = cos(Inc);
+
+    cart.head(3) = alpha * r_orb;
+    cart.tail(3) = alpha * v_orb;
 
     return true;
 }

@@ -91,14 +91,15 @@ bool LVLH2ICS(const Eigen::Matrix<T, Eigen::Dynamic, 1> &Target,
 /// 计算从直角坐标到轨道根数
 template <typename T>
 bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart, 
-    Eigen::Array<T, Eigen::Dynamic, 1> & elem);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> & elem);
 
 /// Transformate Cartesian coordinates to classical elements
 /// 计算从轨道根数到直角坐标
 template <typename T>
-bool Elem2Cart(const Eigen::Array<T, Eigen::Dynamic, 1> & elem, 
+bool Elem2Cart(const Eigen::Matrix<T, Eigen::Dynamic, 1> & elem, 
     Eigen::Matrix<T, Eigen::Dynamic, 1> & cart);
 
 }
 
 #include "ODSLib/ODS_Transformation_t.h"
+
