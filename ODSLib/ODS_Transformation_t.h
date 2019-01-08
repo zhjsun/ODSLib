@@ -413,12 +413,13 @@ template <typename T>
 bool Elem2Cart(const Eigen::Matrix<T, Eigen::Dynamic, 1> & elem, 
     Eigen::Matrix<T, Eigen::Dynamic, 1> & cart) {
 
-    T SemiA = elem(0);
+    T SemiA = elem(0) * 1e-3;   // km
     T Ecc = elem(1);
     T Inc = elem(2);
     T RAAN = elem(3);
     T w = elem(4);
     T TrueA = elem(5);
+    double GM_km = GM * 1e-9;
 
     T p = SemiA * (1 - Ecc * Ecc); // 半通径
     T r = p / (1 + Ecc * cos(TrueA));
@@ -427,7 +428,7 @@ bool Elem2Cart(const Eigen::Matrix<T, Eigen::Dynamic, 1> & elem,
     Eigen::Matrix<T, 3, 1> r_orb, v_orb;
     r_orb << r * cos(TrueA), r * sin(TrueA), 0.0;
     v_orb << -sin(TrueA), Ecc + cos(TrueA), 0.0;
-    v_orb = sqrt(GM/p) * v_orb;
+    v_orb = sqrt(GM_km/p) * v_orb;
 
     // orbital frame to inertial frame
     Eigen::Matrix<T, 3, 3> alpha;
@@ -441,8 +442,8 @@ bool Elem2Cart(const Eigen::Matrix<T, Eigen::Dynamic, 1> & elem,
     alpha(2, 1) = cos(w)*sin(Inc);
     alpha(2, 2) = cos(Inc);
 
-    cart.head(3) = alpha * r_orb;
-    cart.tail(3) = alpha * v_orb;
+    cart.head(3) = alpha * r_orb * 1000.0;  // m
+    cart.tail(3) = alpha * v_orb * 1000.0;  // m/s
 
     return true;
 }
