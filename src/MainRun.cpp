@@ -18,6 +18,7 @@ int main( void ) {
     // Elem << 6778137, 0.0, 0.1, 2.0*atan(1.0), 2*atan(1), 0;
     // cout << "Target state:" << endl << tar << endl;
 
+    /*
     Elem << 6778137, 0.1, 0.2, ODS::Pi/2, ODS::Pi, atan(1.0)*2;
     cout << "Original element:" << endl << Elem << endl;
 
@@ -26,15 +27,16 @@ int main( void ) {
 
     ODS::Cart2Elem(tar, Elem);
     cout << "Target element:" << endl << Elem << endl;
+    */
 
     DA::init(1, 6);
     Matrix<DA, -1, 1> DA_elem(6), DA_state(6);
     DA_elem(0) = 6778137.0 + DA(1);
     DA_elem(1) = 0.1       + DA(2);
-    DA_elem(2) = 0.2       + DA(3);
-    DA_elem(3) = ODS::Pi/2 + DA(4);
-    DA_elem(4) = ODS::Pi/2 + DA(5);
-    DA_elem(5) = 1.0*ODS::Pi/2 + DA(6);
+    DA_elem(2) = 0.1       + DA(3);
+    DA_elem(3) = ODS::Pi * 7/4 + DA(4);
+    DA_elem(4) = ODS::Pi * 5/4 + DA(5);
+    DA_elem(5) = ODS::Pi * 6/4 + DA(6);
     cout << "Orbital element:" << endl;
     for(int i = 0; i < 6; ++i) {
         cout << DA_elem(i) << endl;

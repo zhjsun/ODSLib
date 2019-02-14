@@ -352,7 +352,10 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     HVec = RVec.cross(VVec);
     T hh = HVec.norm();
     NVec = ZVec.cross(HVec);
-    T nn = NVec.norm();
+    // If NVec is a zero vector, use np as nn to avoid Exception for DA
+    // There may be some high-order error for Inc
+    T np = NVec(0)*NVec(0) + NVec(1)*NVec(1) + NVec(2)*NVec(2);
+    T nn = np.cons()>0 ? NVec.norm() : np;
     EVec = ((vv*vv - GM_km/rr)*RVec - (RVec.dot(VVec))*VVec)/GM_km;
     T Ecc = EVec.norm();
 
@@ -370,28 +373,19 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
 
     // calculate inclination
     T Inc;
-    Inc = acos(HVec.dot(ZVec)/hh);
+    Inc = atan2(nn, ZVec.dot(HVec));
 
     // calculate RAAN
     T RAAN;
-    RAAN = acos(NVec.dot(XVec)/nn);
-    if(cons(NVec.dot(YVec)) < 0.0) {
-        RAAN = 2*ODS::Pi - RAAN;
-    }
+    RAAN = atan2(ZVec.dot(XVec.cross(NVec)), XVec.dot(NVec));
 
     // calculate omega
     T w;
-    w = acos(NVec.dot(EVec)/(nn*Ecc));
-    if(cons(EVec.dot(ZVec)) < 0.0) {
-        w = 2*ODS::Pi - w;
-    }
+    w = atan2((HVec/hh).dot(NVec.cross(EVec)), NVec.dot(EVec));
 
     // calculate omega
     T TrueA;
-    TrueA = acos(EVec.dot(RVec)/(Ecc*rr));
-    if(cons(RVec.dot(VVec)) < 0.0) {
-        TrueA = 2*ODS::Pi - TrueA;
-    }
+    TrueA = atan2((HVec/hh).dot(EVec.cross(RVec)), EVec.dot(RVec));
 
     elem(0) = SemiA * 1000.0;
     elem(1) = Ecc;
