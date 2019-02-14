@@ -18,8 +18,7 @@ int main( void ) {
     // Elem << 6778137, 0.0, 0.1, 2.0*atan(1.0), 2*atan(1), 0;
     // cout << "Target state:" << endl << tar << endl;
 
-    /*
-    Elem << 6778137, 0.1, 0.2, ODS::Pi/2, ODS::Pi, atan(1.0)*2;
+    Elem << 6778137, 0.1, 0.2, ODS::Pi/2, ODS::Pi*7/4, atan(1.0)*2;
     cout << "Original element:" << endl << Elem << endl;
 
     ODS::Elem2Cart(Elem, tar);
@@ -27,7 +26,6 @@ int main( void ) {
 
     ODS::Cart2Elem(tar, Elem);
     cout << "Target element:" << endl << Elem << endl;
-    */
 
     DA::init(1, 6);
     Matrix<DA, -1, 1> DA_elem(6), DA_state(6);

@@ -355,7 +355,7 @@ bool Cart2Elem(const Eigen::Matrix<T, Eigen::Dynamic, 1> & cart,
     // If NVec is a zero vector, use np as nn to avoid Exception for DA
     // There may be some high-order error for Inc
     T np = NVec(0)*NVec(0) + NVec(1)*NVec(1) + NVec(2)*NVec(2);
-    T nn = np.cons()>0 ? NVec.norm() : np;
+    T nn = cons(np)>0 ? NVec.norm() : np;
     EVec = ((vv*vv - GM_km/rr)*RVec - (RVec.dot(VVec))*VVec)/GM_km;
     T Ecc = EVec.norm();
 
