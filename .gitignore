@@ -3,6 +3,9 @@
 *.dat
 *.doc
 build/
+.vs/
+out/
+CMakeSettings.json
 
 # VScode configures
 .vscode/

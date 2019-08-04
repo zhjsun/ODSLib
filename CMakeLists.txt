@@ -1,12 +1,19 @@
 cmake_minimum_required (VERSION 3.11)
 project (ODSLib_Demo)
 
-# set the compiler and options
-set (CMAKE_CXX_COMPILER clang++)
-set (CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g -ggdb")
-set (CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
+if (UNIX)
+    # set the compiler and options
+    set (CMAKE_CXX_COMPILER clang++)
+    set (CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g -ggdb")
+    set (CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 
-include_directories(BEFORE .)
+    include_directories(BEFORE .)
+elseif (WIN32)
+    set (CMAKE_CXX_FLAGS "/utf-8")
+    include_directories(BEFORE .)
+    include_directories(AFTER D:\\local\\include)
+    link_directories(D:\\local\\lib D:\\local\\bin)
+endif ()
 
 aux_source_directory(./src DIR_SRCS)
 
